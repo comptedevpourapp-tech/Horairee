@@ -1,5 +1,7 @@
 # App personnalisée TrueNAS SCALE (Electric Eel 24.10+ : Apps → Discover → ⋮ → Install via YAML)
 # Fonctionne aussi en direct : docker compose up -d
+# ATTENTION TrueNAS : le nom d'app doit être en minuscules (ex. horaire-umons)
+name: horaire-umons
 services:
   horaire-umons:
     build: .
