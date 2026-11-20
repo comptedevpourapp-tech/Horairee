@@ -2,17 +2,16 @@
 """Mini site web pour afficher l'horaire HyperPlanning (type hplanning2026.umons.ac.be/invite).
 
 Lance le serveur :
-    python3 serveur_horaires.py [--port 8000] [--url URL_ICAL]
+    python3 serveur_horaires.py [--port 8000] [--host 127.0.0.1] [--url URL_ICAL]
 
 Puis ouvre http://127.0.0.1:8000 dans le navigateur.
 
-- Par défaut l'horaire affiché est l'export public « toutes salles » de l'UMONS.
-- Le champ « URL iCal » de la page permet de coller un lien iCal (.ics) de
-  n'importe quelle ressource (diplôme, promotion, salle, enseignant).
-- Le champ « Filtre » restreint l'affichage (ex. 'BAB2 - Ir. civil').
+- La page propose un sélecteur de ressources (formations, salles) reconstruit
+  depuis l'export public « toutes salles », comme dans l'interface d'origine.
+- On peut aussi coller une URL iCal précise dans le champ prévu.
+- Variables d'environnement (utile en Docker / TrueNAS) : HP_HOST, HP_PORT, HP_URL.
 
 Aucune dépendance externe : bibliothèque standard uniquement.
-Le serveur n'écoute que sur 127.0.0.1 (local).
 """
 
 import argparse
@@ -20,7 +19,6 @@ import json
 import os
 import sys
 import time
-import urllib.request
 from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -28,18 +26,45 @@ from urllib.parse import parse_qs, urlparse
 
 import horaires
 
-CACHE = {"url": None, "quand": 0.0, "evenements": []}
+CACHE = {"url": None, "quand": 0.0, "evenements": [], "ressources": None}
 DUREE_CACHE = 300  # secondes
 
 
-def obtenir_evenements(url_ics: str):
+def obtenir_donnees(url_ics: str):
     maintenant = time.time()
     if CACHE["url"] == url_ics and CACHE["evenements"] and maintenant - CACHE["quand"] < DUREE_CACHE:
-        return CACHE["evenements"]
+        return CACHE["evenements"], CACHE["ressources"]
     texte = horaires.telecharger_ics(url_ics)
     evenements = horaires.parser_ics(texte)
-    CACHE.update(url=url_ics, quand=maintenant, evenements=evenements)
-    return evenements
+    formations = {}
+    salles = {}
+    for e in evenements:
+        e["formations"] = []
+        e["salles_liste"] = []
+        e["groupes"] = []
+        for ligne in (e.get("description") or "").split("\n"):
+            ligne = ligne.strip()
+            if ":" not in ligne:
+                continue
+            cle, _, valeur = ligne.partition(":")
+            cle = cle.strip().lower()
+            valeurs = [v.strip() for v in valeur.split(",") if v.strip()]
+            if cle in ("formation", "formations"):
+                e["formations"] += valeurs
+            elif cle in ("salle", "salles"):
+                e["salles_liste"] += valeurs
+            elif cle in ("groupe", "groupes"):
+                e["groupes"] += valeurs
+        for f in e["formations"]:
+            formations.setdefault(f, f.lstrip("."))
+        for s in e["salles_liste"]:
+            salles[s] = s
+    ressources = {
+        "formations": dict(sorted(formations.items(), key=lambda kv: kv[0].lower())),
+        "salles": dict(sorted(salles.items(), key=lambda kv: kv[0].lower())),
+    }
+    CACHE.update(url=url_ics, quand=maintenant, evenements=evenements, ressources=ressources)
+    return evenements, ressources
 
 
 def evenements_en_json(evenements):
@@ -50,12 +75,13 @@ def evenements_en_json(evenements):
         resultat.append({
             "debut": debut.isoformat(),
             "fin": fin.isoformat(),
-            "minuteDebut": debut.hour * 60 + debut.minute,
-            "minuteFin": max(fin.hour * 60 + fin.minute, debut.hour * 60 + debut.minute + 15),
             "jour": debut.strftime("%A"),
             "matiere": e.get("matiere", ""),
             "salle": e.get("salle", ""),
             "description": e.get("description", ""),
+            "formations": e.get("formations", []),
+            "salles_liste": e.get("salles_liste", []),
+            "groupes": e.get("groupes", []),
         })
     return resultat
 
@@ -81,9 +107,18 @@ class Controleur(BaseHTTPRequestHandler):
         try:
             if analyse.path in ("/", "/index.html"):
                 self._envoyer(200, PAGE.read_text(encoding="utf-8"), "text/html")
+            elif analyse.path == "/api/ressources":
+                url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
+                _, ressources = obtenir_donnees(url_ics)
+                self._envoyer(200, json.dumps({
+                    "formations": [{"valeur": v, "affichage": a} for v, a in ressources["formations"].items()],
+                    "salles": [{"valeur": s, "affichage": a} for s, a in ressources["salles"].items()],
+                }, ensure_ascii=False), "application/json")
             elif analyse.path == "/api/horaires":
-                url_ics = params.get("url", [horaires.URL_SALLES])[0] or horaires.URL_SALLES
-                evenements = evenements_en_json(obtenir_evenements(url_ics))
+                url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
+                evenements_bruts, _ = obtenir_donnees(url_ics)
+                evenements = evenements_en_json(evenements_bruts)
+
                 lundi = None
                 brut = params.get("semaine", [""])[0]
                 if brut:
@@ -95,15 +130,34 @@ class Controleur(BaseHTTPRequestHandler):
                     aujourdhui = datetime.now(horaires.TZ_LOCAL)
                     lundi = aujourdhui - timedelta(days=aujourdhui.weekday())
                 dimanche = lundi + timedelta(days=7)
+
+                type_ressource = (params.get("type", [""])[0] or "").strip().lower()
+                ressource = (params.get("ressource", [""])[0] or "").strip()
                 filtre = (params.get("filtre", [""])[0] or "").strip().lower()
-                selection = [
-                    e for e in evenements
-                    if lundi <= datetime.fromisoformat(e["debut"]) < dimanche
-                    and (not filtre or filtre in (e["matiere"] + " " + e["salle"] + " " + e["description"]).lower())
-                ]
+
+                selection = []
+                for e in evenements:
+                    if not (lundi <= datetime.fromisoformat(e["debut"]) < dimanche):
+                        continue
+                    dessous = e["matiere"] + " " + e["salle"] + " " + e["description"]
+                    if filtre and filtre not in dessous.lower():
+                        continue
+                    dessous = dessous.lower() + " " + " ".join(e["formations"] + e["salles_liste"] + e["groupes"]).lower()
+                    if filtre and filtre not in dessous.lower():
+                        continue
+                    if type_ressource == "formation" and ressource:
+                        if ressource not in e["formations"]:
+                            continue
+                    elif type_ressource == "salle" and ressource:
+                        if ressource not in e["salles_liste"]:
+                            continue
+                    selection.append(e)
+
                 self._envoyer(200, json.dumps({
                     "semaine": lundi.strftime("%Y-%m-%d"),
                     "filtre": filtre,
+                    "type": type_ressource,
+                    "ressource": ressource,
                     "cours": selection,
                 }, ensure_ascii=False), "application/json")
             else:
@@ -122,10 +176,11 @@ def main(argv=None):
                          help="URL iCal affichée par défaut (ou variable d'environnement HP_URL)")
     args = parseur.parse_args(argv)
 
-    evenements = evenements_en_json(obtenir_evenements(args.url))
+    evenements, ressources = obtenir_donnees(args.url)
     if evenements:
-        dates = [e["debut"][:10] for e in evenements]
+        dates = [e["debut"].astimezone(horaires.TZ_LOCAL).date() for e in evenements]
         print(f"Serveur prêt : {len(evenements)} cours en cache ({min(dates)} -> {max(dates)}).", file=sys.stderr)
+        print(f"Ressources : {len(ressources['formations'])} formations, {len(ressources['salles'])} salles.", file=sys.stderr)
     serveur = ThreadingHTTPServer((args.host, args.port), Controleur)
     print(f"Ouvrez http://{args.host}:{args.port} dans votre navigateur.", file=sys.stderr)
     try:
