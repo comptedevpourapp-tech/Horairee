@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emploi du temps — UMONS</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Verdana, Arial, sans-serif; background: #f4f5f7; color: #222; }
+  header { background: #cc2427; color: #fff; padding: 12px 18px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  header h1 { font-size: 18px; margin: 0 14px 0 0; }
+  input[type=text] { padding: 7px 9px; border: none; border-radius: 4px; min-width: 140px; font-size: 13px; }
+  #filtre { width: 200px; } #url { flex: 1 1 320px; }
+  button { padding: 7px 13px; border: none; border-radius: 4px; background: #ffffff2b; color: #fff; cursor: pointer; font-size: 13px; }
+  button:hover { background: #ffffff45; }
+  #titreSemaine { font-weight: bold; font-size: 14px; margin: 0 6px; }
+  main { padding: 12px; }
+  #grille { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px #0002; overflow: hidden; }
+  .entete { display: grid; grid-template-columns: 52px repeat(7, 1fr); border-bottom: 2px solid #ddd; }
+  .entete div { padding: 8px 4px; text-align: center; font-weight: bold; font-size: 13px; border-left: 1px solid #eee; }
+  .entete div:first-child { border-left: none; }
+  .corps { position: relative; display: grid; grid-template-columns: 52px repeat(7, 1fr); height: 780px; }
+  .colHeures { position: relative; }
+  .hLab { position: absolute; right: 6px; font-size: 11px; color: #888; transform: translateY(-50%); }
+  .col { position: relative; border-left: 1px solid #eee; }
+  .ligne { position: absolute; left: 0; right: 0; height: 1px; background: #f0f0f0; }
+  .cours { position: absolute; border-radius: 5px; padding: 4px 5px; font-size: 11px; line-height: 1.35;
+           overflow: hidden; z-index: 2; }
+  .cours:hover { z-index: 6; box-shadow: 0 3px 10px #0003; }
+  .cours b { display: block; }
+  .cours .h { color: #555; }
+  .cours .salle { color: #8a6d3b; }
+  .marqueur { position: absolute; height: 2px; background: #cc2427; z-index: 6; pointer-events: none; }
+  .marqueur::before { content: ""; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: #cc2427; }
+  #message { padding: 20px; text-align: center; color: #777; }
+  @media (max-width: 700px) { .cours { font-size: 10px; padding: 2px 3px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Emploi du temps — UMONS</h1>
+  <input type="text" id="url" placeholder="URL iCal (.ics) — vide = export toutes salles UMONS">
+  <input type="text" id="filtre" placeholder="Filtre (ex. BAB2 - Ir. civil)">
+  <button id="prec" title="Semaine précédente">◀</button>
+  <span id="titreSemaine"></span>
+  <button id="suiv" title="Semaine suivante">▶</button>
+  <button id="auj">Cette semaine</button>
+</header>
+<main>
+  <div id="grille"></div>
+  <div id="message">Chargement…</div>
+</main>
+<script>
+"use strict";
+const HEURE_DEBUT = 7, HEURE_FIN = 20, PX_PAR_HEURE = 60;
+const HAUTEUR = (HEURE_FIN - HEURE_DEBUT) * PX_PAR_HEURE;
+const nomsJours = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+const palette = ["#4a72c9","#3f9e46","#b5622d","#7a4ac9","#c93f6e","#2f8ba0","#a0792f","#456f9e"];
+
+let lundi = lundiDe(new Date());
+
+function lundiDe(d) {
+  const l = new Date(d);
+  l.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  l.setHours(0, 0, 0, 0);
+  return l;
+}
+function fmtDate(d) {
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function topPx(minute) { return (minute - HEURE_DEBUT*60) / 60 * PX_PAR_HEURE; }
+function couleur(txt) {
+  let h = 0;
+  for (const ch of txt) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return palette[h % palette.length];
+}
+function fondCouleur(hex) {
+  const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i+2), 16));
+  return "rgb(" + c.map(x => Math.round(x + (255-x)*0.75)).join(",") + ")";
+}
+
+function charger() {
+  const u = new URL("/api/horaires", location);
+  const url = document.getElementById("url").value.trim();
+  const filtre = document.getElementById("filtre").value.trim();
+  if (url) u.searchParams.set("url", url);
+  if (filtre) u.searchParams.set("filtre", filtre);
+  u.searchParams.set("semaine", fmtDate(lundi));
+  document.getElementById("message").textContent = "Chargement…";
+  fetch(u).then(r => r.json()).then(data => {
+    if (data.erreur) throw new Error(data.erreur);
+    afficher(data);
+  }).catch(e => {
+    document.getElementById("message").textContent = "Erreur : " + e.message;
+  });
+}
+
+function afficher(data) {
+  const ref = new Date(data.semaine + "T00:00:00");
+  const jours = nomsJours.map((nom, i) => {
+    const d = new Date(ref); d.setDate(ref.getDate() + i);
+    return { nom, date: d };
+  });
+  document.getElementById("titreSemaine").textContent =
+    jours[0].date.toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit"}) + " → " +
+    jours[6].date.toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit", year:"2-digit"});
+
+  const grille = document.getElementById("grille");
+  grille.innerHTML =
+    '<div class="entete"><div></div>' + jours.map(j =>
+      "<div>" + j.nom + "<br><small>" + j.date.toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit"}) + "</small></div>").join("") +
+    '</div><div class="corps"><div class="colHeures">' +
+    Array.from({length: HEURE_FIN - HEURE_DEBUT + 1}, (_, i) =>
+      '<div class="hLab" style="top:' + (i*PX_PAR_HEURE) + 'px">' +
+      String(HEURE_DEBUT + i).padStart(2,"0") + ":00</div>").join("") +
+    "</div>" +
+    jours.map(() => '<div class="col"></div>').join("") +
+    "</div>";
+
+  const colonnes = grille.querySelectorAll(".col");
+  for (const col of colonnes) {
+    for (let i = 1; i < HEURE_FIN - HEURE_DEBUT; i++) {
+      const l = document.createElement("div");
+      l.className = "ligne";
+      l.style.top = (i * PX_PAR_HEURE) + "px";
+      col.appendChild(l);
+    }
+  }
+
+  const parJour = [[], [], [], [], [], [], []];
+  for (const c of data.cours) parJour[(new Date(c.debut).getDay() + 6) % 7].push(c);
+
+  let total = 0;
+  for (let j = 0; j < 7; j++) {
+    const liste = parJour[j].sort((a, b) => a.debut.localeCompare(b.debut));
+    const bornes = liste.map(c => {
+      const d = new Date(c.debut), f = new Date(c.fin);
+      const mD = Math.max(d.getHours()*60 + d.getMinutes(), HEURE_DEBUT*60);
+      const mF = Math.max(Math.min(f.getHours()*60 + f.getMinutes(), HEURE_FIN*60), mD + 15);
+      c.mD = mD; c.mF = mF; return c;
+    });
+    const colonnesLibres = [];
+    for (const c of bornes) {
+      let idx = colonnesLibres.findIndex(fin => fin <= c.mD);
+      if (idx === -1) { colonnesLibres.push(c.mF); idx = colonnesLibres.length - 1; }
+      else colonnesLibres[idx] = c.mF;
+      c.col = idx;
+    }
+    let i = 0;
+    while (i < bornes.length) {
+      let finGroupe = bornes[i].mF, k = i + 1;
+      while (k < bornes.length && bornes[k].mD < finGroupe) { finGroupe = Math.max(finGroupe, bornes[k].mF); k++; }
+      const nb = colonnesLibres.length;
+      for (let m = i; m < k; m++) {
+        const c = bornes[m];
+        c.nbCols = Math.max(colonnesLibres.length, 1);
+      }
+      i = k;
+    }
+    for (const c of bornes) {
+      const el = document.createElement("div");
+      el.className = "cours";
+      const couleurB = couleur(c.matiere.replace(/\s*-\s*\.?\w.*$/, "") || c.matiere);
+      el.style.background = fondCouleur(couleurB);
+      el.style.borderLeft = "4px solid " + couleurB;
+      el.style.top = topPx(c.mD) + "px";
+      el.style.height = Math.max(topPx(c.mF) - topPx(c.mD) - 2, 16) + "px";
+      const part = "(100% - 8px) / " + c.nbCols;
+      el.style.left = "calc(4px + " + c.col + " * " + part + ")";
+      el.style.width = "calc(" + part + ")";
+      const titreCourt = (c.matiere.split(" - ")[0] || c.matiere).replace(/</g, "&lt;");
+      el.innerHTML = "<b>" + titreCourt + "</b>" +
+        '<span class="h">' + c.debut.slice(11,16) + "–" + c.fin.slice(11,16) + "</span>" +
+        (c.salle ? '<span class="salle"> ' + c.salle.split(",")[0].replace(/</g,"&lt;") + "</span>" : "");
+      el.title = c.matiere + "\n" + c.debut.slice(11,16) + " – " + c.fin.slice(11,16) +
+        (c.salle ? "\nSalle : " + c.salle : "") + (c.description ? "\n\n" + c.description.replace(/\|/g, "\n") : "");
+      colonnes[j].appendChild(el);
+      total++;
+    }
+  }
+
+  const maintenant = new Date();
+  const idx = (maintenant.getDay() + 6) % 7;
+  const minute = maintenant.getHours()*60 + maintenant.getMinutes();
+  if (fmtDate(lundiDe(maintenant)) === data.semaine && minute >= HEURE_DEBUT*60 && minute <= HEURE_FIN*60) {
+    const m = document.createElement("div");
+    m.className = "marqueur";
+    m.style.top = topPx(minute) + "px";
+    m.style.left = "calc(52px + " + idx + " * (100% - 52px) / 7)";
+    m.style.width = "calc((100% - 52px) / 7)";
+    grille.querySelector(".corps").appendChild(m);
+  }
+
+  document.getElementById("message").textContent = total === 0
+    ? "Aucun cours cette semaine. Rappel : le serveur UMONS ne publie qu\u2019environ 3 semaines à l\u2019avance."
+    : "";
+}
+
+document.getElementById("prec").onclick = () => { lundi.setDate(lundi.getDate() - 7); charger(); };
+document.getElementById("suiv").onclick = () => { lundi.setDate(lundi.getDate() + 7); charger(); };
+document.getElementById("auj").onclick = () => { lundi = lundiDe(new Date()); charger(); };
+document.getElementById("filtre").addEventListener("keydown", e => { if (e.key === "Enter") charger(); });
+document.getElementById("url").addEventListener("keydown", e => { if (e.key === "Enter") charger(); });
+
+charger();
+</script>
+</body>
+</html>
