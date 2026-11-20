@@ -1,11 +1,12 @@
 # App personnalisée TrueNAS SCALE (Electric Eel 24.10+ : Apps → Discover → ⋮ → Install via YAML)
 # Fonctionne aussi en direct : docker compose up -d
-# ATTENTION TrueNAS : le nom d'app doit être en minuscules (ex. horaire-umons)
+# ATTENTION TrueNAS : le champ App Name doit être en minuscules (ex. horaire-umons)
 name: horaire-umons
 services:
   horaire-umons:
-    build: .
-    image: horaire-umons:latest
+    # Image officielle publique : aucun build ni registre privé requis.
+    # Le code est récupéré depuis ce dépôt GitHub à chaque démarrage.
+    image: python:3.12-slim
     container_name: horaire-umons
     restart: unless-stopped
     ports:
@@ -15,3 +16,11 @@ services:
       HP_PORT: "8000"
       # Facultatif : URL iCal d'une ressource précise (diplôme, promo, salle, enseignant)
       # HP_URL: "https://hplanning2026.umons.ac.be/ical/xxxx.ics?idICal=...&param=..."
+    command: >
+      sh -c "apt-get update -qq &&
+             apt-get install -y -qq --no-install-recommends git tzdata ca-certificates &&
+             rm -rf /var/lib/apt/lists/* &&
+             rm -rf /app &&
+             git clone https://github.com/comptedevpourapp-tech/Horairee.git /app &&
+             cd /app &&
+             exec python serveur_horaires.py"
