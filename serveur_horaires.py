@@ -17,6 +17,7 @@ Le serveur n'écoute que sur 127.0.0.1 (local).
 
 import argparse
 import json
+import os
 import sys
 import time
 import urllib.request
@@ -115,16 +116,18 @@ class Controleur(BaseHTTPRequestHandler):
 
 def main(argv=None):
     parseur = argparse.ArgumentParser(description="Serveur web d'affichage de l'horaire HyperPlanning.")
-    parseur.add_argument("--port", type=int, default=8000)
-    parseur.add_argument("--url", default=horaires.URL_SALLES, help="URL iCal affichée par défaut")
+    parseur.add_argument("--port", type=int, default=int(os.environ.get("HP_PORT", "8000")))
+    parseur.add_argument("--host", default=os.environ.get("HP_HOST", "127.0.0.1"))
+    parseur.add_argument("--url", default=os.environ.get("HP_URL", horaires.URL_SALLES),
+                         help="URL iCal affichée par défaut (ou variable d'environnement HP_URL)")
     args = parseur.parse_args(argv)
 
     evenements = evenements_en_json(obtenir_evenements(args.url))
     if evenements:
         dates = [e["debut"][:10] for e in evenements]
         print(f"Serveur prêt : {len(evenements)} cours en cache ({min(dates)} -> {max(dates)}).", file=sys.stderr)
-    serveur = ThreadingHTTPServer(("127.0.0.1", args.port), Controleur)
-    print(f"Ouvrez http://127.0.0.1:{args.port} dans votre navigateur.", file=sys.stderr)
+    serveur = ThreadingHTTPServer((args.host, args.port), Controleur)
+    print(f"Ouvrez http://{args.host}:{args.port} dans votre navigateur.", file=sys.stderr)
     try:
         serveur.serve_forever()
     except KeyboardInterrupt:

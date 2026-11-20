@@ -1,0 +1,15 @@
+# App personnalisée TrueNAS SCALE (Electric Eel 24.10+ : Apps → Discover → ⋮ → Install via YAML)
+# Fonctionne aussi en direct : docker compose up -d
+services:
+  horaire-umons:
+    build: .
+    image: horaire-umons:latest
+    container_name: horaire-umons
+    restart: unless-stopped
+    ports:
+      - "8080:8000"
+    environment:
+      HP_HOST: "0.0.0.0"
+      HP_PORT: "8000"
+      # Facultatif : URL iCal d'une ressource précise (diplôme, promo, salle, enseignant)
+      # HP_URL: "https://hplanning2026.umons.ac.be/ical/xxxx.ics?idICal=...&param=..."

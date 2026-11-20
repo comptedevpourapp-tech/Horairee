@@ -1,0 +1,6 @@
+__pycache__
+*.pyc
+invite*.html
+invite.js
+*.ics
+.DS_Store
