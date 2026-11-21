@@ -1,0 +1,25 @@
+# Variante TrueNAS SCALE avec l image pre-construite publiee sur GHCR
+# (le workflow GitHub Actions la reconstruit a chaque push sur main)
+# Apps -> Discover -> menue (3 points) -> Install via YAML : collez ce fichier.
+# ATTENTION TrueNAS : le champ App Name doit etre en minuscules (ex. horaire-umons)
+# Demarrage plus rapide et plus leger que la variante clone (docker-compose.yaml) :
+# aucun git, aucun apt-get au demarrage, image deja prete.
+name: horaire-umons
+services:
+  horaire-umons:
+    image: ghcr.io/comptedevpourapp-tech/horairee:latest
+    container_name: horaire-umons
+    restart: unless-stopped
+    ports:
+      - "8080:8000"
+    volumes:
+      # Persistance de l'archive des semaines (indispensable pour revoir les semaines passees)
+      - horaire-donnees:/app/data
+    environment:
+      HP_HOST: "0.0.0.0"
+      HP_PORT: "8000"
+      HP_ARCHIVE: "/app/data/archive_horaires.json"
+      # Facultatif : URL iCal d'une ressource precise (diplome, promo, salle, enseignant)
+      # HP_URL: "https://hplanning2026.umons.ac.be/ical/xxxx.ics?idICal=...&param=..."
+volumes:
+  horaire-donnees:
