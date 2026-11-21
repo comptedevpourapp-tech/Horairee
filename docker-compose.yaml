@@ -11,9 +11,13 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8000"
+    volumes:
+      # Persistance de l'archive des semaines (indispensable pour revoir les semaines passées)
+      - horaire-donnees:/app/data
     environment:
       HP_HOST: "0.0.0.0"
       HP_PORT: "8000"
+      HP_ARCHIVE: "/app/data/archive_horaires.json"
       # Facultatif : URL iCal d'une ressource précise (diplôme, promo, salle, enseignant)
       # HP_URL: "https://hplanning2026.umons.ac.be/ical/xxxx.ics?idICal=...&param=..."
     command: >
@@ -23,4 +27,7 @@ services:
              rm -rf /app &&
              git clone https://github.com/comptedevpourapp-tech/Horairee.git /app &&
              cd /app &&
+             mkdir -p /app/data &&
              exec python serveur_horaires.py"
+volumes:
+  horaire-donnees:

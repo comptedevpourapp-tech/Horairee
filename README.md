@@ -34,6 +34,15 @@ python3 horaires.py --format csv -o cours.csv
 python3 serveur_horaires.py          # http://127.0.0.1:8000
 ```
 
+## Sémaines passées (archive locale)
+
+Le serveur UMONS ne publie qu'≈ 3 semaines glissantes. L'app enregistre donc
+automatiquement chaque semaine consultée dans une archive JSON (`HP_ARCHIVE`,
+défaut `archive_horaires.json` à côté du script ; dans Docker : volume
+`/app/data`) et la recapture toutes les `CAPTURE_HEURES` heures (défaut 6).
+Une semaine déjà capturée reste consultable après sa disparition de la fenêtre
+publiée ; une semaine jamais capturée (trop ancienne ou trop future) n'est pas
+disponible — un badge l'indique dans la page.
+
 Notes :
-- Le serveur ne publie qu'≈ 3 semaines glissantes de cours : une semaine future plus lointaine est vide, ce n'est pas un bug.
 - Pour l'emploi du temps d'une promo précise : dans l'interface `invite?fd=1`, ouvrez la ressource, cliquez le bouton iCal et copiez le lien permanent dans `HP_URL` ou le champ de la page.

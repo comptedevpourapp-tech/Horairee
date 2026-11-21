@@ -50,10 +50,12 @@
   </select>
   <input type="text" id="recherche" placeholder="Rechercher…" style="display:none">
   <select id="ressource" title="Choix de la ressource"><option value="">—</option></select>
+  <select id="groupe" title="Groupe (TD/TP)" style="display:none"><option value="">Groupe : tous</option></select>
   <button id="reset" title="Tout réafficher">Réinitialiser</button>
   <div id="semaineNav">
     <button id="prec" title="Semaine précédente">◀</button>
     <span id="titreSemaine"></span>
+    <span id="badgeSource" style="font-size:11px; background:#fff3; padding:2px 8px; border-radius:10px; display:none;"></span>
     <button id="suiv" title="Semaine suivante">▶</button>
     <button id="auj">Cette semaine</button>
   </div>
@@ -110,6 +112,32 @@ function chargerRessources() {
   });
 }
 
+function majGroupes() {
+  const sel = document.getElementById("groupe");
+  const type = document.getElementById("categorie").value;
+  const ressource = document.getElementById("ressource").value;
+  if (type !== "formations" || !ressource) {
+    sel.style.display = "none";
+    sel.innerHTML = '<option value="">Groupe : tous</option>';
+    return;
+  }
+  const u = new URL("/api/ressources", location);
+  if (urlIcal()) u.searchParams.set("url", urlIcal());
+  u.searchParams.set("type", "formation");
+  u.searchParams.set("ressource", ressource);
+  fetch(u).then(r => r.json()).then(data => {
+    const conserve = sel.value;
+    sel.innerHTML = '<option value="">Groupe : tous</option>';
+    for (const g of data.groupes || []) {
+      const o = document.createElement("option");
+      o.value = g; o.textContent = "Groupe : " + g;
+      sel.appendChild(o);
+    }
+    if ([...sel.options].some(o => o.value === conserve)) sel.value = conserve;
+    sel.style.display = sel.options.length > 1 ? "" : "none";
+  }).catch(() => { sel.style.display = "none"; });
+}
+
 function majListeRessources() {
   const sel = document.getElementById("ressource");
   const type = document.getElementById("categorie").value;
@@ -137,10 +165,12 @@ function charger() {
   if (filtre) u.searchParams.set("filtre", filtre);
   const type = document.getElementById("categorie").value;
   const ressource = document.getElementById("ressource").value;
+  const groupe = document.getElementById("groupe").value;
   if (type && ressource) {
     u.searchParams.set("type", type === "formations" ? "formation" : "salle");
     u.searchParams.set("ressource", ressource);
   }
+  if (groupe) u.searchParams.set("groupe", groupe);
   u.searchParams.set("semaine", fmtDate(lundi));
   document.getElementById("message").textContent = "Chargement…";
   fetch(u).then(r => r.json()).then(data => {
@@ -246,8 +276,21 @@ function afficher(data) {
     grille.querySelector(".corps").appendChild(m);
   }
 
+  const badge = document.getElementById("badgeSource");
+  const horsFenetre = data.fenetre && (ref < new Date(data.fenetre.debut + "T00:00:00") || ref > new Date(data.fenetre.fin + "T23:59:59"));
+  if (horsFenetre && data.source === "archive") {
+    badge.style.display = "";
+    badge.textContent = "📁 semaine archivée";
+  } else if (horsFenetre && total === 0) {
+    badge.style.display = "";
+    badge.textContent = "⛔ jamais publiée";
+  } else {
+    badge.style.display = "none";
+  }
   document.getElementById("message").textContent = total === 0
-    ? "Aucun cours cette semaine pour cette sélection. Rappel : le serveur UMONS ne publie qu\u2019environ 3 semaines à l\u2019avance."
+    ? (horsFenetre
+        ? "Aucune donnée enregistrée pour cette semaine (elle n\u2019a jamais été capturée ; le serveur UMONS ne publie que ~3 semaines glissantes)."
+        : "Aucun cours cette semaine pour cette sélection.")
     : "";
 }
 
@@ -258,7 +301,7 @@ document.getElementById("categorie").onchange = () => {
   majListeRessources();
   charger();
 };
-document.getElementById("ressource").onchange = charger;
+document.getElementById("ressource").onchange = () => { majGroupes(); charger(); };
 document.getElementById("recherche").addEventListener("input", majListeRessources);
 document.getElementById("prec").onclick = () => { lundi.setDate(lundi.getDate() - 7); charger(); };
 document.getElementById("suiv").onclick = () => { lundi.setDate(lundi.getDate() + 7); charger(); };
@@ -267,6 +310,8 @@ document.getElementById("reset").onclick = () => {
   document.getElementById("categorie").value = "";
   document.getElementById("recherche").value = "";
   document.getElementById("recherche").style.display = "none";
+  document.getElementById("groupe").value = "";
+  document.getElementById("groupe").style.display = "none";
   document.getElementById("url").value = "";
   document.getElementById("filtre").value = "";
   majListeRessources();

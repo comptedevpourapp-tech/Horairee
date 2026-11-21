@@ -4,12 +4,13 @@
 Lance le serveur :
     python3 serveur_horaires.py [--port 8000] [--host 127.0.0.1] [--url URL_ICAL]
 
-Puis ouvre http://127.0.0.1:8000 dans le navigateur.
-
-- La page propose un sélecteur de ressources (formations, salles) reconstruit
-  depuis l'export public « toutes salles », comme dans l'interface d'origine.
-- On peut aussi coller une URL iCal précise dans le champ prévu.
-- Variables d'environnement (utile en Docker / TrueNAS) : HP_HOST, HP_PORT, HP_URL.
+- Sélecteur de ressources (formations, salles, groupes) reconstruit depuis
+  l'export public « toutes salles », comme dans l'interface d'origine.
+- Archive locale persistante (HP_ARCHIVE) : les semaines publiées (fenêtre
+  glissante ≈ 3 semaines) sont enregistrées à chaque consultation et via une
+  capture automatique périodique (CAPTURE_HEURES, défaut 6 h), ce qui permet
+  de revoir les semaines passées même quand le serveur ne les publie plus.
+- Variables d'environnement : HP_HOST, HP_PORT, HP_URL, HP_ARCHIVE, CAPTURE_HEURES.
 
 Aucune dépendance externe : bibliothèque standard uniquement.
 """
@@ -18,7 +19,9 @@ import argparse
 import json
 import os
 import sys
+import threading
 import time
+import traceback
 from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -26,18 +29,116 @@ from urllib.parse import parse_qs, urlparse
 
 import horaires
 
+FICHIER_ARCHIVE = Path(os.environ.get(
+    "HP_ARCHIVE",
+    str(Path(__file__).with_name("archive_horaires.json")),
+))
+INTERVALLE_CAPTURE = float(os.environ.get("CAPTURE_HEURES", "6")) * 3600
+
 CACHE = {"url": None, "quand": 0.0, "evenements": [], "ressources": None}
-DUREE_CACHE = 300  # secondes
+ARCHIVE = {}
+DUREE_CACHE = 300
 
 
-def obtenir_donnees(url_ics: str):
+def charger_archive():
+    global ARCHIVE
+    if FICHIER_ARCHIVE.exists():
+        try:
+            ARCHIVE = json.loads(FICHIER_ARCHIVE.read_text(encoding="utf-8"))
+        except Exception as err:
+            print(f"Archive illisible ({err}), démarrage à vide.", file=sys.stderr)
+            ARCHIVE = {}
+
+
+def sauver_archive():
+    try:
+        temporaire = FICHIER_ARCHIVE.with_suffix(".tmp")
+        temporaire.write_text(json.dumps(ARCHIVE, ensure_ascii=False), encoding="utf-8")
+        temporaire.replace(FICHIER_ARCHIVE)
+    except Exception as err:
+        print(f"Impossible d'écrire l'archive {FICHIER_ARCHIVE} : {err}", file=sys.stderr)
+
+
+def enregistrer_dans_archive(evenements):
+    modifie = False
+    for e in evenements:
+        uid = e.get("uid") or (
+            e["debut"].astimezone(horaires.TZ_LOCAL).isoformat() + "|" + e.get("matiere", "")
+        )
+        rec = {
+            "debut": e["debut"].astimezone(horaires.TZ_LOCAL).isoformat(),
+            "fin": e["fin"].astimezone(horaires.TZ_LOCAL).isoformat(),
+            "matiere": e.get("matiere", ""),
+            "salle": e.get("salle", ""),
+            "description": e.get("description", ""),
+            "uid": uid,
+            "maj": e.get("maj", ""),
+            "vu": datetime.now(horaires.TZ_LOCAL).isoformat(timespec="seconds"),
+        }
+        actuel = ARCHIVE.get(uid)
+        if actuel is None or actuel.get("maj") != rec["maj"]:
+            rec["vu"] = actuel.get("vu", rec["vu"]) if actuel else rec["vu"]
+            ARCHIVE[uid] = rec
+            modifie = True
+    if modifie or not FICHIER_ARCHIVE.exists():
+        sauver_archive()
+
+
+def evenements_archive():
+    evenements = []
+    for rec in ARCHIVE.values():
+        try:
+            evenements.append({
+                "debut": datetime.fromisoformat(rec["debut"]),
+                "fin": datetime.fromisoformat(rec["fin"]),
+                "matiere": rec.get("matiere", ""),
+                "salle": rec.get("salle", ""),
+                "description": rec.get("description", ""),
+                "uid": rec.get("uid", ""),
+                "formations": [],
+                "salles_liste": [],
+                "groupes": [],
+            })
+            for ligne in rec.get("description", "").split("\n"):
+                ligne = ligne.strip()
+                if ":" not in ligne:
+                    continue
+                cle, _, valeur = ligne.partition(":")
+                cle = cle.strip().lower()
+                valeurs = [v.strip() for v in valeur.split(",") if v.strip()]
+                if cle in ("formation", "formations"):
+                    evenements[-1]["formations"] += valeurs
+                elif cle in ("salle", "salles"):
+                    evenements[-1]["salles_liste"] += valeurs
+                elif cle in ("groupe", "groupes"):
+                    evenements[-1]["groupes"] += valeurs
+        except Exception:
+            continue
+    return evenements
+
+
+def classer_champs(evenements):
+    formations = {}
+    salles = {}
+    for e in evenements:
+        for f in e.get("formations", []) or []:
+            formations.setdefault(f, f.lstrip("."))
+        for s in e.get("salles_liste", []) or []:
+            salles.setdefault(s, s)
+    return {
+        "formations": dict(sorted(formations.items(), key=lambda kv: kv[0].lower())),
+        "salles": dict(sorted(salles.items(), key=lambda kv: kv[0].lower())),
+    }
+
+
+def obtenir_donnees(url_ics: str, autoriser_cache=True):
     maintenant = time.time()
-    if CACHE["url"] == url_ics and CACHE["evenements"] and maintenant - CACHE["quand"] < DUREE_CACHE:
+    if (autoriser_cache and CACHE["url"] == url_ics and CACHE["evenements"]
+            and maintenant - CACHE["quand"] < DUREE_CACHE):
         return CACHE["evenements"], CACHE["ressources"]
     texte = horaires.telecharger_ics(url_ics)
     evenements = horaires.parser_ics(texte)
-    formations = {}
-    salles = {}
+    enregistrer_dans_archive(evenements)
     for e in evenements:
         e["formations"] = []
         e["salles_liste"] = []
@@ -55,16 +156,21 @@ def obtenir_donnees(url_ics: str):
                 e["salles_liste"] += valeurs
             elif cle in ("groupe", "groupes"):
                 e["groupes"] += valeurs
-        for f in e["formations"]:
-            formations.setdefault(f, f.lstrip("."))
-        for s in e["salles_liste"]:
-            salles[s] = s
-    ressources = {
-        "formations": dict(sorted(formations.items(), key=lambda kv: kv[0].lower())),
-        "salles": dict(sorted(salles.items(), key=lambda kv: kv[0].lower())),
-    }
-    CACHE.update(url=url_ics, quand=maintenant, evenements=evenements, ressources=ressources)
-    return evenements, ressources
+    CACHE.update(url=url_ics, quand=maintenant, evenements=evenements,
+                 ressources=classer_champs(evenements))
+    return evenements, CACHE["ressources"]
+
+
+def boucle_capture(url_ics):
+    def tour():
+        while True:
+            time.sleep(INTERVALLE_CAPTURE)
+            try:
+                obtenir_donnees(url_ics, autoriser_cache=False)
+            except Exception:
+                traceback.print_exc(file=sys.stderr)
+    fil = threading.Thread(target=tour, daemon=True)
+    fil.start()
 
 
 def evenements_en_json(evenements):
@@ -75,7 +181,6 @@ def evenements_en_json(evenements):
         resultat.append({
             "debut": debut.isoformat(),
             "fin": fin.isoformat(),
-            "jour": debut.strftime("%A"),
             "matiere": e.get("matiere", ""),
             "salle": e.get("salle", ""),
             "description": e.get("description", ""),
@@ -110,14 +215,43 @@ class Controleur(BaseHTTPRequestHandler):
             elif analyse.path == "/api/ressources":
                 url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
                 _, ressources = obtenir_donnees(url_ics)
+                type_ressource = (params.get("type", [""])[0] or "").strip().lower()
+                ressource = (params.get("ressource", [""])[0] or "").strip()
+                groupes = {}
+                if type_ressource == "formation" and ressource:
+                    for e in list(CACHE["evenements"]) + evenements_archive():
+                        if ressource in (e.get("formations") or []):
+                            for g in e.get("groupes") or []:
+                                if g:
+                                    groupes.setdefault(g, g)
+                    # dédoublonnage approx : la même formation peut avoir les mêmes
+                    # groupes exprimés avec virgules répétées
+                else:
+                    for e in list(CACHE["evenements"]) + evenements_archive():
+                        for g in e.get("groupes") or []:
+                            if g:
+                                groupes.setdefault(g, g)
                 self._envoyer(200, json.dumps({
                     "formations": [{"valeur": v, "affichage": a} for v, a in ressources["formations"].items()],
                     "salles": [{"valeur": s, "affichage": a} for s, a in ressources["salles"].items()],
+                    "groupes": sorted(groupes, key=str.lower),
                 }, ensure_ascii=False), "application/json")
             elif analyse.path == "/api/horaires":
                 url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
-                evenements_bruts, _ = obtenir_donnees(url_ics)
-                evenements = evenements_en_json(evenements_bruts)
+                try:
+                    evenements_bruts, _ = obtenir_donnees(url_ics)
+                    source = "live"
+                except Exception as err:
+                    print(f"Téléchargement impossible ({err}); repli sur l'archive.", file=sys.stderr)
+                    evenements_bruts = []
+                    source = "archive"
+
+                fusion = {}
+                for e in evenements_archive():
+                    fusion[e.get("uid")] = e
+                for e in evenements_bruts:
+                    fusion[e.get("uid")] = e
+                evenements = list(fusion.values())
 
                 lundi = None
                 brut = params.get("semaine", [""])[0]
@@ -131,40 +265,67 @@ class Controleur(BaseHTTPRequestHandler):
                     lundi = aujourdhui - timedelta(days=aujourdhui.weekday())
                 dimanche = lundi + timedelta(days=7)
 
+                filtre = (params.get("filtre", [""])[0] or "").strip().lower()
                 type_ressource = (params.get("type", [""])[0] or "").strip().lower()
                 ressource = (params.get("ressource", [""])[0] or "").strip()
-                filtre = (params.get("filtre", [""])[0] or "").strip().lower()
+                groupe = (params.get("groupe", [""])[0] or "").strip()
 
                 selection = []
                 for e in evenements:
-                    if not (lundi <= datetime.fromisoformat(e["debut"]) < dimanche):
+                    if not (lundi <= e["debut"].astimezone(horaires.TZ_LOCAL) < dimanche):
                         continue
-                    dessous = e["matiere"] + " " + e["salle"] + " " + e["description"]
-                    if filtre and filtre not in dessous.lower():
+                    if type_ressource == "formation" and ressource and ressource not in (e.get("formations") or []):
                         continue
-                    dessous = dessous.lower() + " " + " ".join(e["formations"] + e["salles_liste"] + e["groupes"]).lower()
-                    if filtre and filtre not in dessous.lower():
+                    if type_ressource == "salle" and ressource and ressource not in (e.get("salles_liste") or []):
                         continue
-                    if type_ressource == "formation" and ressource:
-                        if ressource not in e["formations"]:
-                            continue
-                    elif type_ressource == "salle" and ressource:
-                        if ressource not in e["salles_liste"]:
+                    dessous = " ".join(
+                        [e.get("matiere", ""), e.get("salle", ""), e.get("description", ""),
+                         " ".join(e.get("formations") or []), " ".join(e.get("salles_liste") or [])]
+                    ).lower()
+                    if filtre and filtre not in dessous:
+                        continue
+                    dessous_g = dessous + " " + " ".join(e.get("groupes") or []).lower()
+                    if filtre and filtre not in dessous_g:
+                        continue
+                    if groupe:
+                        groupes_e = [g for g in (e.get("groupes") or []) if g]
+                        if groupes_e and groupe not in groupes_e:
                             continue
                     selection.append(e)
+                selection.sort(key=lambda e: e["debut"])
+
+                if evenements_bruts:
+                    fenetre = {
+                        "debut": min(e["debut"] for e in evenements_bruts).date().isoformat(),
+                        "fin": max(e["fin"] for e in evenements_bruts).date().isoformat(),
+                    }
+                    debut_semaine = lundi.date()
+                    fin_semaine = (dimanche - timedelta(days=1)).date()
+                    hors_fenetre = (fin_semaine < datetime.fromisoformat(fenetre["debut"]).date()
+                                    or debut_semaine > datetime.fromisoformat(fenetre["fin"]).date())
+                    source = "archive" if hors_fenetre else "live"
+                    if hors_fenetre and not selection:
+                        source = "vide"
+                else:
+                    fenetre = None
+                    source = "archive" if selection else "vide"
 
                 self._envoyer(200, json.dumps({
                     "semaine": lundi.strftime("%Y-%m-%d"),
                     "filtre": filtre,
                     "type": type_ressource,
                     "ressource": ressource,
-                    "cours": selection,
+                    "groupe": groupe,
+                    "fenetre": fenetre,
+                    "source": source,
+                    "cours": evenements_en_json(selection),
                 }, ensure_ascii=False), "application/json")
             else:
                 self._envoyer(404, "Introuvable", "text/plain")
         except (BrokenPipeError, ConnectionResetError):
             pass
         except Exception as err:
+            traceback.print_exc(file=sys.stderr)
             self._envoyer(500, json.dumps({"erreur": str(err)}), "application/json")
 
 
@@ -176,17 +337,21 @@ def main(argv=None):
                          help="URL iCal affichée par défaut (ou variable d'environnement HP_URL)")
     args = parseur.parse_args(argv)
 
-    evenements, ressources = obtenir_donnees(args.url)
-    if evenements:
-        dates = [e["debut"].astimezone(horaires.TZ_LOCAL).date() for e in evenements]
-        print(f"Serveur prêt : {len(evenements)} cours en cache ({min(dates)} -> {max(dates)}).", file=sys.stderr)
-        print(f"Ressources : {len(ressources['formations'])} formations, {len(ressources['salles'])} salles.", file=sys.stderr)
+    charger_archive()
+    evenements, ressources = obtenir_donnees(args.url, autoriser_cache=False)
+    dates = [e["debut"].astimezone(horaires.TZ_LOCAL).date() for e in evenements] if evenements else []
+    print(f"Serveur prêt : {len(evenements)} cours en cache "
+          f"({min(dates)} -> {max(dates)})." if dates else "Serveur prêt : aucune donnée live.", file=sys.stderr)
+    print(f"Ressources : {len(ressources['formations'])} formations, {len(ressources['salles'])} salles, "
+          f"archive : {len(ARCHIVE)} cours enregistrés.", file=sys.stderr)
+    boucle_capture(args.url)
     serveur = ThreadingHTTPServer((args.host, args.port), Controleur)
     print(f"Ouvrez http://{args.host}:{args.port} dans votre navigateur.", file=sys.stderr)
     try:
         serveur.serve_forever()
     except KeyboardInterrupt:
         print("\nArrêt du serveur.", file=sys.stderr)
+        sauver_archive()
 
 
 if __name__ == "__main__":
