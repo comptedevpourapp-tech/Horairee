@@ -7,37 +7,66 @@
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; font-family: Verdana, Arial, sans-serif; background: #f4f5f7; color: #222; }
-  header { background: #cc2427; color: #fff; padding: 12px 18px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  header h1 { font-size: 18px; margin: 0 14px 0 0; flex: 0 0 auto; }
-  select, input[type=text] { padding: 7px 9px; border: none; border-radius: 4px; min-width: 130px; font-size: 13px; }
-  #recherche { flex: 0 1 160px; }
-  #ressource { flex: 1 1 220px; max-width: 420px; }
-  #url { flex: 1 1 260px; }
-  #filtre { width: 170px; }
+  header { background: #cc2427; color: #fff; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  header h1 { font-size: 17px; margin: 0 10px 0 0; flex: 0 0 auto; }
+  select, input[type=text] { padding: 7px 9px; border: none; border-radius: 4px; min-width: 120px; font-size: 13px; }
+  #recherche { flex: 0 1 150px; }
+  #ressource { flex: 1 1 220px; max-width: 400px; }
+  #groupeRecherche { flex: 0 1 180px; }
+  #groupe { flex: 1 1 170px; max-width: 300px; }
+  #filtre { width: 150px; }
   #semaineNav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
   button { padding: 7px 13px; border: none; border-radius: 4px; background: #ffffff2b; color: #fff; cursor: pointer; font-size: 13px; }
   button:hover { background: #ffffff45; }
   #titreSemaine { font-weight: bold; font-size: 14px; margin: 0 4px; white-space: nowrap; }
-  main { padding: 12px; }
+  #badgeSource { font-size: 11px; background: #fff3; padding: 2px 8px; border-radius: 10px; display: none; }
+  .controles { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  main { padding: 10px; }
+  #legende { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .legende-item { font-size: 11px; background: #fff; border-radius: 10px; padding: 3px 10px 3px 6px;
+                  box-shadow: 0 1px 3px #0002; display: flex; align-items: center; gap: 6px; }
+  .legende-puce { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
   #grille { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px #0002; overflow: hidden; }
   .entete { display: grid; grid-template-columns: 52px repeat(7, 1fr); border-bottom: 2px solid #ddd; }
   .entete div { padding: 8px 4px; text-align: center; font-weight: bold; font-size: 13px; border-left: 1px solid #eee; }
   .entete div:first-child { border-left: none; }
+  .entete small { font-weight: normal; color: #777; display: block; }
+  .entete .aujourdhui { background: #fff3e0; }
   .corps { position: relative; display: grid; grid-template-columns: 52px repeat(7, 1fr); height: 780px; }
   .colHeures { position: relative; }
   .hLab { position: absolute; right: 6px; font-size: 11px; color: #888; transform: translateY(-50%); }
   .col { position: relative; border-left: 1px solid #eee; }
   .ligne { position: absolute; left: 0; right: 0; height: 1px; background: #f0f0f0; }
-  .cours { position: absolute; border-radius: 5px; padding: 4px 5px; font-size: 11px; line-height: 1.35;
-           overflow: hidden; z-index: 2; }
-  .cours:hover { z-index: 6; box-shadow: 0 3px 10px #0003; }
+  .cours { position: absolute; border-radius: 5px; padding: 4px 5px; font-size: 11px; line-height: 1.3;
+           overflow: hidden; z-index: 2; cursor: pointer; border-top: 3px solid #fff8; }
+  .cours:hover { z-index: 7; box-shadow: 0 3px 10px #0004; }
+  .type { display: inline-block; font-size: 9px; background: #00000022; border-radius: 3px; padding: 0 4px; margin-bottom: 2px; }
   .cours b { display: block; }
-  .cours .h { color: #555; }
-  .cours .salle { color: #8a6d3b; }
+  .cours .code { display: inline-block; font-size: 10px; color: #445; background: #ffffffaa; border-radius: 3px; padding: 0 4px; }
+  .cours .h { color: #444; }
+  .cours .salle { color: #222; font-weight: bold; }
+  .cours .ens { color: #555; font-style: italic; }
   .marqueur { position: absolute; height: 2px; background: #cc2427; z-index: 6; pointer-events: none; }
   .marqueur::before { content: ""; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: #cc2427; }
   #message { padding: 20px; text-align: center; color: #777; }
-  @media (max-width: 700px) { .cours { font-size: 10px; padding: 2px 3px; } }
+  #voile { position: fixed; inset: 0; background: #0007; display: none; z-index: 60; }
+  #fiche { position: fixed; z-index: 61; top: 50%; left: 50%; transform: translate(-50%, -50%);
+           background: #fff; border-radius: 10px; max-width: 520px; width: calc(100% - 30px);
+           max-height: 85vh; overflow: auto; padding: 18px 22px; display: none; box-shadow: 0 10px 40px #0006; }
+  #fiche h3 { margin: 4px 0 2px; font-size: 16px; }
+  #fiche .code { font-size: 14px; color: #445; }
+  #fiche dt { font-size: 11px; color: #888; margin-top: 10px; text-transform: uppercase; }
+  #fiche dd { margin: 2px 0 0; font-size: 14px; }
+  #fiche .fermer { position: absolute; top: 8px; right: 8px; background: #eee; color: #333; width: 30px; height: 30px;
+                   border-radius: 50%; font-size: 15px; padding: 0; }
+  .pastilleType { display: inline-block; font-size: 11px; border-radius: 10px; padding: 2px 10px; color: #fff; }
+  @media (max-width: 760px) {
+    .cours { font-size: 9px; padding: 2px 3px; }
+    .entete div { font-size: 10px; padding: 4px 2px; }
+    .corps { height: 620px; }
+    header h1 { display: none; }
+    #groupeRecherche, #recherche { flex: 1 1 100%; }
+  }
 </style>
 </head>
 <body>
@@ -50,33 +79,40 @@
   </select>
   <input type="text" id="recherche" placeholder="Rechercher…" style="display:none">
   <select id="ressource" title="Choix de la ressource"><option value="">—</option></select>
-  <select id="groupe" title="Groupe (TP)"><option value="">Tous les groupes</option></select>
   <button id="reset" title="Tout réafficher">Réinitialiser</button>
   <div id="semaineNav">
     <button id="prec" title="Semaine précédente">◀</button>
     <span id="titreSemaine"></span>
-    <span id="badgeSource" style="font-size:11px; background:#fff3; padding:2px 8px; border-radius:10px; display:none;"></span>
+    <span id="badgeSource"></span>
     <button id="suiv" title="Semaine suivante">▶</button>
     <button id="auj">Cette semaine</button>
   </div>
-  <div class="controles" style="width:100%; display:flex; flex-wrap:wrap; gap:8px;">
+  <div class="controles">
     <label style="font-size:12px;">Groupe (TP) :</label>
-    <input type="text" id="groupeRecherche" placeholder="rechercher votre groupe…" style="flex:0 1 200px;">
+    <input type="text" id="groupeRecherche" placeholder="rechercher votre groupe…">
     <label style="font-size:12px;">Filtre :</label>
     <input type="text" id="filtre" placeholder="ex. Math">
   </div>
 </header>
 <main>
+  <div id="legende"></div>
   <div id="grille"></div>
   <div id="message">Chargement…</div>
 </main>
+<div id="voile"></div>
+<div id="fiche"></div>
 <script>
 "use strict";
 const HEURE_DEBUT = 7, HEURE_FIN = 20, PX_PAR_HEURE = 60;
 const nomsJours = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
 const palette = ["#4a72c9","#3f9e46","#b5622d","#7a4ac9","#c93f6e","#2f8ba0","#a0792f","#456f9e"];
+const couleursType = {
+  "Cours": "#4a72c9", "Exercices": "#3f9e46", "TP": "#b5622d",
+  "Examen": "#c93f6e", "Séminaire": "#7a4ac9", "Conférence": "#2f8ba0", "Réunion": "#888888"
+};
 
 let lundi = lundiDe(new Date());
+let catalogue = {formations: [], salles: [], groupes: []};
 
 function lundiDe(d) {
   const l = new Date(d);
@@ -89,17 +125,21 @@ function fmtDate(d) {
 }
 function topPx(minute) { return (minute - HEURE_DEBUT*60) / 60 * PX_PAR_HEURE; }
 function couleur(txt) {
+  if (!txt) return palette[0];
   let h = 0;
-  for (const ch of txt) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  for (const ch of txt.toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return palette[h % palette.length];
 }
 function fondCouleur(hex) {
   const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i+2), 16));
   return "rgb(" + c.map(x => Math.round(x + (255-x)*0.75)).join(",") + ")";
 }
-function urlIcal() { return document.getElementById("url") ? document.getElementById("url").value.trim() : ""; }
-
-let catalogue = {formations: [], salles: [], groupes: []};
+function dureeTexte(e) {
+  const min = e.duree_min || 0;
+  const h = Math.floor(min/60), m = min % 60;
+  return h ? (h + "h" + (m ? String(m).padStart(2,"0") : "")) : (m + " min");
+}
+function echapper(s) { return (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 function chargerRessources() {
   fetch(new URL("/api/ressources", location)).then(r => r.json()).then(data => {
@@ -109,23 +149,6 @@ function chargerRessources() {
   }).catch(e => {
     document.getElementById("message").textContent = "Impossible de charger la liste des ressources : " + e.message;
   });
-}
-
-function majListeGroupes() {
-  const sel = document.getElementById("groupe");
-  const recherche = document.getElementById("groupeRecherche").value.trim().toLowerCase();
-  const conserve = sel.value;
-  sel.innerHTML = "";
-  const tete = document.createElement("option");
-  tete.value = ""; tete.textContent = "Tous les groupes";
-  sel.appendChild(tete);
-  for (const g of catalogue.groupes) {
-    if (recherche && !g.toLowerCase().includes(recherche)) continue;
-    const o = document.createElement("option");
-    o.value = g; o.textContent = g;
-    sel.appendChild(o);
-  }
-  if ([...sel.options].some(o => o.value === conserve)) sel.value = conserve;
 }
 
 function majListeRessources() {
@@ -148,9 +171,25 @@ function majListeRessources() {
   if ([...sel.options].some(o => o.value === conserve)) sel.value = conserve;
 }
 
+function majListeGroupes() {
+  const sel = document.getElementById("groupe");
+  const recherche = document.getElementById("groupeRecherche").value.trim().toLowerCase();
+  const conserve = sel.value;
+  sel.innerHTML = "";
+  const tete = document.createElement("option");
+  tete.value = ""; tete.textContent = "Tous les groupes";
+  sel.appendChild(tete);
+  for (const g of catalogue.groupes) {
+    if (recherche && !g.toLowerCase().includes(recherche)) continue;
+    const o = document.createElement("option");
+    o.value = g; o.textContent = g;
+    sel.appendChild(o);
+  }
+  if ([...sel.options].some(o => o.value === conserve)) sel.value = conserve;
+}
+
 function charger() {
   const u = new URL("/api/horaires", location);
-  if (urlIcal()) u.searchParams.set("url", urlIcal());
   const filtre = document.getElementById("filtre").value.trim();
   if (filtre) u.searchParams.set("filtre", filtre);
   const type = document.getElementById("categorie").value;
@@ -177,15 +216,17 @@ function afficher(data) {
     const d = new Date(ref); d.setDate(ref.getDate() + i);
     return { nom, date: d };
   });
-  const etiquette = document.getElementById("categorie").value && data.ressource ? data.ressource : "";
   document.getElementById("titreSemaine").textContent =
     jours[0].date.toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit"}) + " → " +
     jours[6].date.toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit", year:"2-digit"});
 
   const grille = document.getElementById("grille");
   grille.innerHTML =
-    '<div class="entete"><div></div>' + jours.map(j =>
-      "<div>" + j.nom + "<br><small>" + j.date.toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit"}) + "</small></div>").join("") +
+    '<div class="entete"><div></div>' + jours.map(j => {
+      const complet = j.date.toLocaleDateString("fr-BE", {day:"numeric", month:"long", year:"numeric"});
+      const pose = fmtDate(j.date) === fmtDate(new Date()) ? " aujourdhui" : "";
+      return "<div class='entete-j" + pose + "'>" + j.nom + "<small>" + complet + "</small></div>";
+    }).join("") +
     '</div><div class="corps"><div class="colHeures">' +
     Array.from({length: HEURE_FIN - HEURE_DEBUT + 1}, (_, i) =>
       '<div class="hLab" style="top:' + (i*PX_PAR_HEURE) + 'px">' +
@@ -207,6 +248,7 @@ function afficher(data) {
   const parJour = [[], [], [], [], [], [], []];
   for (const c of data.cours) parJour[(new Date(c.debut).getDay() + 6) % 7].push(c);
 
+  const legendes = new Map();
   let total = 0;
   for (let j = 0; j < 7; j++) {
     const liste = parJour[j].sort((a, b) => a.debut.localeCompare(b.debut));
@@ -233,25 +275,44 @@ function afficher(data) {
     for (const c of bornes) {
       const el = document.createElement("div");
       el.className = "cours";
-      const couleurB = couleur(c.matiere.replace(/\s*-\s*\.?\w.*$/, "") || c.matiere);
+      const intitule = c.intitule || (c.matiere.split(" - ")[0] || c.matiere);
+      const couleurB = couleur(intitule) ;
       el.style.background = fondCouleur(couleurB);
       el.style.borderLeft = "4px solid " + couleurB;
       el.style.top = topPx(c.mD) + "px";
-      el.style.height = Math.max(topPx(c.mF) - topPx(c.mD) - 2, 16) + "px";
+      el.style.height = Math.max(topPx(c.mF) - topPx(c.mD) - 2, 18) + "px";
       const part = "(100% - 8px) / " + c.nbCols;
       el.style.left = "calc(4px + " + c.col + " * " + part + ")";
       el.style.width = "calc(" + part + ")";
-      const titreCourt = (c.matiere.split(" - ")[0] || c.matiere).replace(/</g, "&lt;");
-      el.innerHTML = "<b>" + titreCourt + "</b>" +
+      const ens = c.enseignants && c.enseignants.length ? c.enseignants.join(", ") : "";
+      el.innerHTML =
+        '<span class="type">' + echapper(c.type || "Cours") + "</span>" +
+        "<b>" + echapper(intitule) + "</b>" +
+        (c.code ? '<span class="code">' + echapper(c.code) + "</span> " : "") +
         '<span class="h">' + c.debut.slice(11,16) + "–" + c.fin.slice(11,16) + "</span>" +
-        (c.salle ? '<span class="salle"> ' + c.salle.split(",")[0].replace(/</g,"&lt;") + "</span>" : "");
-      el.title = c.matiere + "\n" + c.debut.slice(11,16) + " – " + c.fin.slice(11,16) +
-        (c.salle ? "\nSalle : " + c.salle : "") +
-        (etiquette && !c.salle ? "\n" : "") +
-        (c.description ? "\n" + c.description.replace(/\|/g, "\n") : "");
+        (c.duree_min ? ' <span class="h">(' + dureeTexte(c) + ")</span>" : "") +
+        (c.salle ? '<span class="salle"> ' + echapper(c.salle.split(",")[0]) + "</span>" : "") +
+        (ens ? '<span class="ens"> ' + echapper(ens) + "</span>" : "");
+      el.onclick = () => montrerFiche(c, intitule);
       colonnes[j].appendChild(el);
       total++;
+      if (!legendes.has(intitule)) legendes.set(intitule, couleurB);
     }
+  }
+
+  const legende = document.getElementById("legende");
+  legende.innerHTML = "";
+  const maxi = 14;
+  let n = 0;
+  for (const [intitule, col] of legendes) {
+    if (n++ >= maxi) break;
+    const item = document.createElement("span");
+    item.className = "legende-item";
+    item.innerHTML = '<span class="legende-puce" style="background:' + col + '"></span>' + echapper(intitule);
+    legende.appendChild(item);
+  }
+  if (legendes.size > maxi) {
+    legende.appendChild(document.createTextNode("+" + (legendes.size - maxi) + " autres cours"));
   }
 
   const maintenant = new Date();
@@ -279,10 +340,41 @@ function afficher(data) {
   }
   document.getElementById("message").textContent = total === 0
     ? (horsFenetre
-        ? "Aucune donnée enregistrée pour cette semaine (elle n\u2019a jamais été capturée ; le serveur UMONS ne publie que ~3 semaines glissantes)."
+        ? "Aucune donnée enregistrée pour cette semaine (elle n'a jamais été capturée ; le serveur UMONS ne publie que ~3 semaines glissantes)."
         : "Aucun cours cette semaine pour cette sélection.")
     : "";
 }
+
+function montrerFiche(c, intitule) {
+  const fiche = document.getElementById("fiche");
+  const voile = document.getElementById("voile");
+  const ens = c.enseignants && c.enseignants.length ? c.enseignants.join(", ") : "";
+  fiche.innerHTML =
+    '<button class="fermer" id="fermerFiche">✕</button>' +
+    '<span class="pastilleType" style="background:' + (couleursType[c.type] || "#4a72c9") + '">' + echapper(c.type || "Cours") + "</span>" +
+    "<h3>" + echapper(intitule) + "</h3>" +
+    '<div class="code">' + (c.code ? echapper(c.code) : "code du cours non fourni par l’export") + "</div>" +
+    "<dl>" +
+    "<dt>Horaire</dt><dd>" + c.debut.slice(11,16) + " – " + c.fin.slice(11,16) +
+    (c.duree_min ? " (" + dureeTexte(c) + ")" : "") + "</dd>" +
+    "<dt>Date</dt><dd>" + new Date(c.debut).toLocaleDateString("fr-BE", {weekday:"long", day:"numeric", month:"long", year:"numeric"}) + "</dd>" +
+    "<dt>Local</dt><dd>" + echapper(c.salle || "—") + "</dd>" +
+    (ens ? "<dt>Enseignant(s)</dt><dd>" + echapper(ens) + "</dd>" : "") +
+    (c.groupes && c.groupes.length ? "<dt>Groupe(s)</dt><dd>" + echapper(c.groupes.join(", ")) + "</dd>" : "") +
+    (c.formations && c.formations.length ? "<dt>Formation(s)</dt><dd>" + echapper(c.formations.map(f => f.replace(/^\\./, "")).join(", ")) + "</dd>" : "") +
+    (c.maj ? "<dt>Dernière mise à jour</dt><dd>" + echapper(c.maj) + "</dd>" : "") +
+    "</dl>" +
+    (c.description ? "<dt>Description d’origine</dt><dd style='white-space:pre-wrap;font-size:12px;color:#555;'>" + echapper(c.description) + "</dd>" : "");
+  fiche.style.display = "block";
+  voile.style.display = "block";
+  document.getElementById("fermerFiche").onclick = fermerFiche;
+}
+function fermerFiche() {
+  document.getElementById("fiche").style.display = "none";
+  document.getElementById("voile").style.display = "none";
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape") fermerFiche(); });
+document.getElementById("voile").onclick = fermerFiche;
 
 document.getElementById("categorie").onchange = () => {
   const type = document.getElementById("categorie").value;
@@ -294,7 +386,6 @@ document.getElementById("categorie").onchange = () => {
 document.getElementById("ressource").onchange = charger;
 document.getElementById("groupe").onchange = charger;
 document.getElementById("groupeRecherche").addEventListener("input", majListeGroupes);
-document.getElementById("recherche").addEventListener("input", majListeRessources);
 document.getElementById("prec").onclick = () => { lundi.setDate(lundi.getDate() - 7); charger(); };
 document.getElementById("suiv").onclick = () => { lundi.setDate(lundi.getDate() + 7); charger(); };
 document.getElementById("auj").onclick = () => { lundi = lundiDe(new Date()); charger(); };
@@ -302,11 +393,11 @@ document.getElementById("reset").onclick = () => {
   document.getElementById("categorie").value = "";
   document.getElementById("recherche").value = "";
   document.getElementById("recherche").style.display = "none";
-  document.getElementById("groupe").value = "";
   document.getElementById("groupeRecherche").value = "";
-  majListeGroupes();
+  document.getElementById("groupe").value = "";
   document.getElementById("filtre").value = "";
   majListeRessources();
+  majListeGroupes();
   charger();
 };
 document.getElementById("filtre").addEventListener("keydown", e => { if (e.key === "Enter") charger(); });

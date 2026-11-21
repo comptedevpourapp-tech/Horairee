@@ -59,12 +59,17 @@ def sauver_archive():
         print(f"Impossible d'écrire l'archive {FICHIER_ARCHIVE} : {err}", file=sys.stderr)
 
 
+def analyser(eve):
+    return horaires.analyser_cours(eve.get("matiere", ""), eve.get("description", ""))
+
+
 def enregistrer_dans_archive(evenements):
     modifie = False
     for e in evenements:
         uid = e.get("uid") or (
             e["debut"].astimezone(horaires.TZ_LOCAL).isoformat() + "|" + e.get("matiere", "")
         )
+        infos = analyser(e)
         rec = {
             "debut": e["debut"].astimezone(horaires.TZ_LOCAL).isoformat(),
             "fin": e["fin"].astimezone(horaires.TZ_LOCAL).isoformat(),
@@ -74,6 +79,10 @@ def enregistrer_dans_archive(evenements):
             "uid": uid,
             "maj": e.get("maj", ""),
             "vu": datetime.now(horaires.TZ_LOCAL).isoformat(timespec="seconds"),
+            "code": infos["code"],
+            "intitule": infos["intitule"],
+            "enseignants": infos["enseignants"],
+            "type_ac": infos["type"],
         }
         actuel = ARCHIVE.get(uid)
         if actuel is None or actuel.get("maj") != rec["maj"]:
@@ -95,9 +104,14 @@ def evenements_archive():
                 "salle": rec.get("salle", ""),
                 "description": rec.get("description", ""),
                 "uid": rec.get("uid", ""),
+                "code": rec.get("code", ""),
+                "intitule": rec.get("intitule", ""),
+                "enseignants": rec.get("enseignants", []),
+                "type": rec.get("type_ac", "Cours"),
                 "formations": [],
                 "salles_liste": [],
                 "groupes": [],
+                "maj": rec.get("maj", ""),
             })
             for ligne in rec.get("description", "").split("\n"):
                 ligne = ligne.strip()
@@ -143,6 +157,9 @@ def obtenir_donnees(url_ics: str, autoriser_cache=True):
         e["formations"] = []
         e["salles_liste"] = []
         e["groupes"] = []
+        infos = analyser(e)
+        e.update({"code": infos["code"], "intitule": infos["intitule"],
+                  "enseignants": infos["enseignants"], "type": infos["type"]})
         for ligne in (e.get("description") or "").split("\n"):
             ligne = ligne.strip()
             if ":" not in ligne:
@@ -178,15 +195,23 @@ def evenements_en_json(evenements):
     for e in evenements:
         debut = e["debut"].astimezone(horaires.TZ_LOCAL)
         fin = e["fin"].astimezone(horaires.TZ_LOCAL)
+        duree = max((fin - debut).total_seconds() // 60, 0)
+        infos = analyser(e)
         resultat.append({
             "debut": debut.isoformat(),
             "fin": fin.isoformat(),
+            "duree_min": int(duree),
             "matiere": e.get("matiere", ""),
             "salle": e.get("salle", ""),
             "description": e.get("description", ""),
-            "formations": e.get("formations", []),
-            "salles_liste": e.get("salles_liste", []),
-            "groupes": e.get("groupes", []),
+            "formations": e.get("formations") or [],
+            "salles_liste": e.get("salles_liste") or [],
+            "groupes": e.get("groupes") or [],
+            "code": e.get("code") or infos["code"],
+            "intitule": e.get("intitule") or infos["intitule"],
+            "enseignants": e.get("enseignants") or infos["enseignants"],
+            "type": e.get("type") or infos["type"],
+            "maj": e.get("maj", ""),
         })
     return resultat
 

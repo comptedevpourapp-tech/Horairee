@@ -158,6 +158,47 @@ def filtre_ricochet(evenement, du: datetime = None, au: datetime = None) -> bool
 
 JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
 
+MOTS_TYPE = [
+    ("Examen", ("examen", "rattrapage")),
+    ("TP", ("tp", "groupes tp", "labo", "pratique")),
+    ("Exercices", ("exercice",)),
+    ("Séminaire", ("séminaire", "seminaire")),
+    ("Conférence", ("conférence", "conference", "débat", "debat")),
+    ("Réunion", ("réunion", "reunion")),
+]
+RE_CODE = re.compile(r"\b[A-Z]{1,4}-[A-Z0-9]{2,5}-\d{3}\b")
+
+
+def analyser_cours(matiere: str = "", description: str = "") -> dict:
+    """Extrait de l'intitulé et de la description iCalendar un dictionnaire structuré :
+    code (ex. I-PHYS-022), intitulé, enseignants (si présents), type d'activité."""
+    infos = {"code": "", "intitule": "", "enseignants": [], "type": "Cours"}
+    for ligne in (description or "").split("\n"):
+        ligne = ligne.strip()
+        cle, sep, valeur = ligne.partition(":")
+        if not sep:
+            continue
+        cle = cle.strip().lower()
+        valeurs = [v.strip() for v in valeur.split(",") if v.strip()]
+        if cle in ("aa", "intitulé", "intitule"):
+            infos["intitule"] = valeur.strip()
+        elif cle in ("code", "code cours"):
+            infos["code"] = valeur.strip()
+        elif cle in ("enseignant", "enseignants", "prof", "profs", "titulaire"):
+            infos["enseignants"] += valeurs
+    recherche = (infos["intitule"] + " " + (matiere or "")).strip()
+    if recherche and not infos["code"]:
+        trouve = RE_CODE.search(recherche)
+        if trouve:
+            infos["code"] = trouve.group(0)
+    if recherche:
+        tout = recherche.lower()
+        for titre, mots in MOTS_TYPE:
+            if any(mot in tout for mot in mots):
+                infos["type"] = titre
+                break
+    return infos
+
 
 def afficher_table(evenements):
     if not evenements:
@@ -185,6 +226,7 @@ def afficher_table(evenements):
 
 
 def vers_dictionnaire(ev) -> dict:
+    infos = analyser_cours(ev.get("matiere", ""), ev.get("description", ""))
     return {
         "debut": ev["debut"].astimezone(TZ_LOCAL).isoformat(),
         "fin": ev["fin"].astimezone(TZ_LOCAL).isoformat(),
@@ -192,6 +234,10 @@ def vers_dictionnaire(ev) -> dict:
         "salle": ev.get("salle", ""),
         "description": ev.get("description", ""),
         "uid": ev.get("uid", ""),
+        "code": infos["code"],
+        "intitule": infos["intitule"],
+        "enseignants": infos["enseignants"],
+        "type": infos["type"],
     }
 
 
