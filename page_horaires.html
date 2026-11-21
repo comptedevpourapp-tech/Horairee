@@ -50,7 +50,7 @@
   </select>
   <input type="text" id="recherche" placeholder="Rechercher…" style="display:none">
   <select id="ressource" title="Choix de la ressource"><option value="">—</option></select>
-  <select id="groupe" title="Groupe (TD/TP)" style="display:none"><option value="">Groupe : tous</option></select>
+  <select id="groupe" title="Groupe (TP)"><option value="">Tous les groupes</option></select>
   <button id="reset" title="Tout réafficher">Réinitialiser</button>
   <div id="semaineNav">
     <button id="prec" title="Semaine précédente">◀</button>
@@ -60,9 +60,9 @@
     <button id="auj">Cette semaine</button>
   </div>
   <div class="controles" style="width:100%; display:flex; flex-wrap:wrap; gap:8px;">
-    <label style="font-size:12px;">URL iCal :</label>
-    <input type="text" id="url" placeholder="Lien iCal (.ics) précis — vide = export UMONS toutes salles">
-    <label style="font-size:12px;">Filtre texte :</label>
+    <label style="font-size:12px;">Groupe (TP) :</label>
+    <input type="text" id="groupeRecherche" placeholder="rechercher votre groupe…" style="flex:0 1 200px;">
+    <label style="font-size:12px;">Filtre :</label>
     <input type="text" id="filtre" placeholder="ex. Math">
   </div>
 </header>
@@ -97,45 +97,35 @@ function fondCouleur(hex) {
   const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i+2), 16));
   return "rgb(" + c.map(x => Math.round(x + (255-x)*0.75)).join(",") + ")";
 }
-function urlIcal() { return document.getElementById("url").value.trim(); }
+function urlIcal() { return document.getElementById("url") ? document.getElementById("url").value.trim() : ""; }
 
-let catalogue = {formations: [], salles: []};
+let catalogue = {formations: [], salles: [], groupes: []};
 
 function chargerRessources() {
-  const u = new URL("/api/ressources", location);
-  if (urlIcal()) u.searchParams.set("url", urlIcal());
-  fetch(u).then(r => r.json()).then(data => {
-    catalogue = {formations: data.formations || [], salles: data.salles || []};
+  fetch(new URL("/api/ressources", location)).then(r => r.json()).then(data => {
+    catalogue = {formations: data.formations || [], salles: data.salles || [], groupes: data.groupes || []};
     majListeRessources();
+    majListeGroupes();
   }).catch(e => {
     document.getElementById("message").textContent = "Impossible de charger la liste des ressources : " + e.message;
   });
 }
 
-function majGroupes() {
+function majListeGroupes() {
   const sel = document.getElementById("groupe");
-  const type = document.getElementById("categorie").value;
-  const ressource = document.getElementById("ressource").value;
-  if (type !== "formations" || !ressource) {
-    sel.style.display = "none";
-    sel.innerHTML = '<option value="">Groupe : tous</option>';
-    return;
+  const recherche = document.getElementById("groupeRecherche").value.trim().toLowerCase();
+  const conserve = sel.value;
+  sel.innerHTML = "";
+  const tete = document.createElement("option");
+  tete.value = ""; tete.textContent = "Tous les groupes";
+  sel.appendChild(tete);
+  for (const g of catalogue.groupes) {
+    if (recherche && !g.toLowerCase().includes(recherche)) continue;
+    const o = document.createElement("option");
+    o.value = g; o.textContent = g;
+    sel.appendChild(o);
   }
-  const u = new URL("/api/ressources", location);
-  if (urlIcal()) u.searchParams.set("url", urlIcal());
-  u.searchParams.set("type", "formation");
-  u.searchParams.set("ressource", ressource);
-  fetch(u).then(r => r.json()).then(data => {
-    const conserve = sel.value;
-    sel.innerHTML = '<option value="">Groupe : tous</option>';
-    for (const g of data.groupes || []) {
-      const o = document.createElement("option");
-      o.value = g; o.textContent = "Groupe : " + g;
-      sel.appendChild(o);
-    }
-    if ([...sel.options].some(o => o.value === conserve)) sel.value = conserve;
-    sel.style.display = sel.options.length > 1 ? "" : "none";
-  }).catch(() => { sel.style.display = "none"; });
+  if ([...sel.options].some(o => o.value === conserve)) sel.value = conserve;
 }
 
 function majListeRessources() {
@@ -301,7 +291,9 @@ document.getElementById("categorie").onchange = () => {
   majListeRessources();
   charger();
 };
-document.getElementById("ressource").onchange = () => { majGroupes(); charger(); };
+document.getElementById("ressource").onchange = charger;
+document.getElementById("groupe").onchange = charger;
+document.getElementById("groupeRecherche").addEventListener("input", majListeGroupes);
 document.getElementById("recherche").addEventListener("input", majListeRessources);
 document.getElementById("prec").onclick = () => { lundi.setDate(lundi.getDate() - 7); charger(); };
 document.getElementById("suiv").onclick = () => { lundi.setDate(lundi.getDate() + 7); charger(); };
@@ -311,14 +303,13 @@ document.getElementById("reset").onclick = () => {
   document.getElementById("recherche").value = "";
   document.getElementById("recherche").style.display = "none";
   document.getElementById("groupe").value = "";
-  document.getElementById("groupe").style.display = "none";
-  document.getElementById("url").value = "";
+  document.getElementById("groupeRecherche").value = "";
+  majListeGroupes();
   document.getElementById("filtre").value = "";
   majListeRessources();
   charger();
 };
 document.getElementById("filtre").addEventListener("keydown", e => { if (e.key === "Enter") charger(); });
-document.getElementById("url").addEventListener("keydown", e => { if (e.key === "Enter") { chargerRessources(); charger(); } });
 
 chargerRessources();
 charger();

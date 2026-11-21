@@ -289,8 +289,10 @@ class Controleur(BaseHTTPRequestHandler):
                         continue
                     if groupe:
                         groupes_e = [g for g in (e.get("groupes") or []) if g]
-                        if groupes_e and groupe not in groupes_e:
-                            continue
+                        if groupe not in groupes_e:
+                            cours_avec_ressource = (type_ressource == "formation" and ressource) or type_ressource == "salle"
+                            if groupes_e or not cours_avec_ressource:
+                                continue
                     selection.append(e)
                 selection.sort(key=lambda e: e["debut"])
 
