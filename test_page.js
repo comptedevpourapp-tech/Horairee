@@ -30,10 +30,21 @@ function getCol(i) {
   return gridCols[i];
 }
 
+const page = fs.readFileSync(__dirname + "/page_horaires.html", "utf8");
+function valeurDefaut(id) {
+  const sel = page.match(new RegExp('<select[^>]*id="' + id + '"[^>]*>([\\s\\S]*?)</select>'));
+  if (!sel) return "";
+  const tete = sel[1].match(/<option value="([^"]*)"[^>]*selected/);
+  return tete ? tete[1] : "";
+}
+
 global.document = {
   getElementById: (id) => {
     if (id.startsWith("col")) return getCol(Number(id.slice(3)));
-    if (!elements[id]) elements[id] = elementStub(id);
+    if (!elements[id]) {
+      elements[id] = elementStub(id);
+      elements[id].value = valeurDefaut(id);
+    }
     if (id === "grille") {
       elements[id].querySelectorAll = () => [0,1,2,3,4,5,6].map(getCol);
       elements[id].querySelector = () => elementStub("corps");
@@ -51,7 +62,6 @@ global.document = {
 
 (async () => {
   const port = process.argv[2] || "8725";
-  const page = fs.readFileSync(__dirname + "/page_horaires.html", "utf8");
   const js = page.match(/<script>([\s\S]*)<\/script>/)[1];
   try {
     // exécution asynchrone : on attend le cycle de promesses
