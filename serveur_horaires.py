@@ -219,6 +219,22 @@ def evenements_en_json(evenements):
 PAGE = Path(__file__).with_name("page_horaires.html")
 
 
+VERSION_CODE = "inconnue"
+
+
+def determiner_version():
+    global VERSION_CODE
+    import subprocess
+    dossier = Path(__file__).parent
+    try:
+        VERSION_CODE = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"], cwd=dossier,
+            capture_output=True, text=True, timeout=5,
+        ).stdout.strip() or "inconnue"
+    except Exception:
+        pass
+
+
 class Controleur(BaseHTTPRequestHandler):
     def log_message(self, *args):
         pass
@@ -228,6 +244,7 @@ class Controleur(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", type_contenu + "; charset=utf-8")
         self.send_header("Content-Length", str(len(octets)))
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(octets)
 
@@ -237,9 +254,16 @@ class Controleur(BaseHTTPRequestHandler):
         try:
             if analyse.path in ("/", "/index.html"):
                 self._envoyer(200, PAGE.read_text(encoding="utf-8"), "text/html")
+            elif analyse.path == "/api/version":
+                self._envoyer(200, json.dumps({"version": VERSION_CODE}), "application/json")
             elif analyse.path == "/api/ressources":
                 url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
-                _, ressources = obtenir_donnees(url_ics)
+                try:
+                    _, ressources = obtenir_donnees(url_ics)
+                except Exception as err:
+                    # si HyperPlanning est injoignable, servir quand même le catalogue de l'archive
+                    print(f"Ressources live indisponibles ({err}) — repli archive.", file=sys.stderr)
+                    ressources = classer_champs(evenements_archive())
                 type_ressource = (params.get("type", [""])[0] or "").strip().lower()
                 ressource = (params.get("ressource", [""])[0] or "").strip()
                 groupes = {}
@@ -364,13 +388,20 @@ def main(argv=None):
                          help="URL iCal affichée par défaut (ou variable d'environnement HP_URL)")
     args = parseur.parse_args(argv)
 
+    determiner_version()
     charger_archive()
-    evenements, ressources = obtenir_donnees(args.url, autoriser_cache=False)
-    dates = [e["debut"].astimezone(horaires.TZ_LOCAL).date() for e in evenements] if evenements else []
-    print(f"Serveur prêt : {len(evenements)} cours en cache "
-          f"({min(dates)} -> {max(dates)})." if dates else "Serveur prêt : aucune donnée live.", file=sys.stderr)
-    print(f"Ressources : {len(ressources['formations'])} formations, {len(ressources['salles'])} salles, "
-          f"archive : {len(ARCHIVE)} cours enregistrés.", file=sys.stderr)
+    try:
+        evenements, ressources = obtenir_donnees(args.url, autoriser_cache=False)
+        dates = [e["debut"].astimezone(horaires.TZ_LOCAL).date() for e in evenements] if evenements else []
+        print(f"Serveur prêt : {len(evenements)} cours en cache "
+              f"({min(dates)} -> {max(dates)})." if dates else "Serveur prêt : aucune donnée live.", file=sys.stderr)
+        print(f"Ressources : {len(ressources['formations'])} formations, {len(ressources['salles'])} salles, "
+              f"archive : {len(ARCHIVE)} cours enregistrés.", file=sys.stderr)
+    except Exception as err:
+        # vital en conteneur (TrueNAS) : ne pas crasher si HyperPlanning est injoignable,
+        # on démarre quand même et on sert l'archive disponible
+        print(f"Téléchargement initial impossible ({err}) — démarrage sur archive seule.", file=sys.stderr)
+        evenements, ressources = evenements_archive(), classer_champs(evenements_archive())
     boucle_capture(args.url)
     serveur = ThreadingHTTPServer((args.host, args.port), Controleur)
     print(f"Ouvrez http://{args.host}:{args.port} dans votre navigateur.", file=sys.stderr)
