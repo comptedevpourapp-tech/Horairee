@@ -224,7 +224,11 @@ VERSION_CODE = "inconnue"
 
 def determiner_version():
     global VERSION_CODE
+    import os
     import subprocess
+    VERSION_CODE = os.environ.get("HP_VERSION", "inconnue")
+    if VERSION_CODE not in ("inconnue", ""):
+        return
     dossier = Path(__file__).parent
     try:
         VERSION_CODE = subprocess.run(

@@ -5,6 +5,9 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     TZ=Europe/Brussels
 
+ARG GIT_SHA=inconnue
+ENV HP_VERSION=${GIT_SHA}
+
 WORKDIR /app
 
 COPY horaires.py serveur_horaires.py page_horaires.html ./

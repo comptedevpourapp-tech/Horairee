@@ -69,6 +69,6 @@ global.document = {
   console.log("== badgeSource:", elements["badgeSource"].textContent, "display:", elements["badgeSource"].style.display);
   console.log("== ressource options:", elements["ressource"].options.length);
   console.log("== groupe options:", elements["groupe"].options.length);
-  console.log("== blocs cours ajoutés:", elements["grille"].options.filter(c => c.className === "cours").length);
+  console.log("== blocs cours ajoutés:", gridCols.reduce((n, c) => n + c.options.filter(o => o.className === "cours").length, 0));
   console.log("== items légende:", elements["legende"].options.filter(c => c.className === "legende-item").length);
 })();
