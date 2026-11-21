@@ -5,7 +5,7 @@ name: horaire-umons
 services:
   horaire-umons:
     # Image officielle publique : aucun build ni registre privé requis.
-    # Le code est récupéré depuis ce dépôt GitHub à chaque démarrage.
+    # Le code est récupéré depuis ce dépôt GitHub au premier démarrage seulement.
     image: python:3.12-slim
     container_name: horaire-umons
     restart: unless-stopped
@@ -24,10 +24,13 @@ services:
       sh -c "apt-get update -qq &&
              apt-get install -y -qq --no-install-recommends git tzdata ca-certificates &&
              rm -rf /var/lib/apt/lists/* &&
-             rm -rf /app &&
-             git clone https://github.com/comptedevpourapp-tech/Horairee.git /app &&
-             cd /app &&
              mkdir -p /app/data &&
+             if [ ! -f /app/serveur_horaires.py ]; then
+               git clone --depth 1 https://github.com/comptedevpourapp-tech/Horairee.git /tmp/src &&
+               cp /tmp/src/*.py /tmp/src/*.html /app/ &&
+               rm -rf /tmp/src ;
+             fi &&
+             cd /app &&
              exec python serveur_horaires.py"
 volumes:
   horaire-donnees:
