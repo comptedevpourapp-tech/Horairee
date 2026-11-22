@@ -34,7 +34,7 @@ import re
 import sys
 import urllib.error
 import urllib.request
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -75,8 +75,9 @@ def telecharger_ics(url: str) -> str:
 
 
 def vider_echappements(valeur: str) -> str:
-    valeur = valeur.replace("\\n", "\n").replace("\\N", "\n")
-    return valeur.replace("\\,", ",").replace("\\;", ";").replace("\\\\", "\\")
+    """Décode les échappements iCal (\\n, \\,, \\;, \\\\) en un seul passage."""
+    table = {"n": "\n", "N": "\n", ",": ",", ";": ";", "\\": "\\"}
+    return re.sub(r"\\(.)", lambda m: table.get(m.group(1), m.group(0)), valeur)
 
 
 def parser_date(valeur: str, parametres: dict) -> datetime:
@@ -103,6 +104,7 @@ def parser_vevent(lignes):
         donnee = vider_echappements(reste)
         if nom == "DTSTART":
             evenement["debut"] = parser_date(reste, parametres)
+            evenement["_journee"] = parametres.get("VALUE") == "DATE" or bool(re.fullmatch(r"\d{8}", reste.strip()))
         elif nom == "DTEND" and reste:
             evenement["fin"] = parser_date(reste, parametres)
         elif nom == "SUMMARY":
@@ -139,7 +141,9 @@ def parser_ics(texte: str):
             event = parser_vevent(bloc)
             if event:
                 if "fin" not in event:
-                    event["fin"] = event["debut"] + timedelta(hours=1)
+                    toute_journee = event.get("_journee")
+                    event["fin"] = event["debut"] + (timedelta(days=1) if toute_journee else timedelta(hours=1))
+                event.pop("_journee", None)
                 evenements.append(event)
         elif dans_vevent:
             bloc.append(ligne)
@@ -273,9 +277,12 @@ def main(argv=None):
     du = datetime.strptime(args.du, "%Y-%m-%d").replace(tzinfo=TZ_LOCAL) if args.du else None
     au = datetime.strptime(args.au, "%Y-%m-%d").replace(tzinfo=TZ_LOCAL) if args.au else None
     if args.semaine:
-        aujourdhui = datetime.now(TZ_LOCAL)
-        lundi = aujourdhui - timedelta(days=aujourdhui.weekday())
-        lundi += timedelta(weeks=args.semaine - aujourdhui.isocalendar().week)
+        annee_iso = datetime.now(TZ_LOCAL).isocalendar().year
+        try:
+            lundi_iso = date.fromisocalendar(annee_iso, args.semaine, 1)
+        except ValueError:
+            sys.exit(f"Numéro de semaine ISO invalide : {args.semaine}")
+        lundi = datetime(lundi_iso.year, lundi_iso.month, lundi_iso.day, tzinfo=TZ_LOCAL)
         du = lundi
         au = lundi + timedelta(days=6)
     if args.futur and not du:

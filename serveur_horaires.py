@@ -201,7 +201,8 @@ def enregistrer_dans_archive(evenements):
                 "type_ac": infos["type"],
             }
             actuel = ARCHIVE.get(uid)
-            if actuel is None or actuel.get("maj") != rec["maj"]:
+            champs = ("maj", "debut", "fin", "matiere", "salle", "description")
+            if actuel is None or any(actuel.get(c) != rec[c] for c in champs):
                 rec["vu"] = actuel.get("vu", rec["vu"]) if actuel else rec["vu"]
                 ARCHIVE[uid] = rec
                 modifie = True
@@ -242,7 +243,7 @@ def obtenir_annuel(ressource):
             return []
         for e in evenements:
             desc = e.get("description") or ""
-            if "formation" not in desc.lower():
+            if not re.search(r"^\s*formations?\s*:", desc, re.IGNORECASE | re.MULTILINE):
                 e["description"] = (desc + f"\nFormations : {ressource}").strip()
             e["description"] = html.unescape(e["description"])
             e["formations"] = []
@@ -282,14 +283,16 @@ def boucle_annuel():
             for indice, ressource in enumerate(list(CATALOGUE_ANNUEL), 1):
                 try:
                     obtenir_annuel(ressource)
-                    reussis += 1
+                    if ressource in ANNUEL_MEMOIRE:
+                        reussis += 1
                 except Exception:
                     traceback.print_exc(file=sys.stderr)
                 if indice % 25 == 0:
                     print(f"Passe annuelle : {indice}/{total} formations traitées "
                           f"(en cours {time.time() - debut_passe:.0f} s)…", file=sys.stderr)
                 time.sleep(DELAIS_ANNUEL)
-            ANNUEL_PRET = True
+            if total == 0 or len(ANNUEL_MEMOIRE) >= total / 2:
+                ANNUEL_PRET = True
             print(f"Passe annuelle terminée : {reussis}/{total} flux intégrés en "
                   f"{time.time() - debut_passe:.0f} s. Archive : {len(ARCHIVE)} cours.",
                   file=sys.stderr)
@@ -430,6 +433,22 @@ def evenements_en_json(evenements):
 PAGE = Path(__file__).with_name("page_horaires.html")
 
 
+def url_autorisee(url: str) -> bool:
+    """Le paramètre ?url= fait télécharger une adresse par le serveur : on la
+    limite aux hôtes HyperPlanning configurés (sinon n'importe quel client du
+    réseau pourrait faire sonder le LAN / les services internes du NAS)."""
+    try:
+        cible = urlparse(url)
+    except ValueError:
+        return False
+    if cible.scheme not in ("http", "https") or not cible.hostname:
+        return False
+    autorises = {urlparse(horaires.BASE).hostname,
+                 urlparse(horaires.URL_SALLES).hostname,
+                 urlparse(os.environ.get("HP_URL", "")).hostname}
+    return cible.hostname.lower() in {h.lower() for h in autorises if h}
+
+
 VERSION_CODE = "inconnue"
 
 
@@ -473,7 +492,8 @@ class Controleur(BaseHTTPRequestHandler):
                 self._envoyer(200, json.dumps({"version": VERSION_CODE}), "application/json")
             elif analyse.path == "/api/semaines":
                 compte = {}
-                for e in list(CACHE["evenements"]) + evenements_archive():
+                for e in fusionner_sources([("archive", evenements_archive()),
+                                            ("live", list(CACHE["evenements"]))]):
                     d = e["debut"].astimezone(horaires.TZ_LOCAL).date()
                     lundi = (d - timedelta(days=d.weekday())).isoformat()
                     compte[lundi] = compte.get(lundi, 0) + 1
@@ -487,6 +507,9 @@ class Controleur(BaseHTTPRequestHandler):
                 }, ensure_ascii=False), "application/json")
             elif analyse.path == "/api/ressources":
                 url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
+                if not url_autorisee(url_ics):
+                    self._envoyer(400, json.dumps({"erreur": "URL iCal non autorisée (hôte HyperPlanning attendu)."}), "application/json")
+                    return
                 try:
                     _, ressources = obtenir_donnees(url_ics)
                 except Exception as err:
@@ -528,6 +551,9 @@ class Controleur(BaseHTTPRequestHandler):
                 }, ensure_ascii=False), "application/json")
             elif analyse.path == "/api/horaires":
                 url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
+                if not url_autorisee(url_ics):
+                    self._envoyer(400, json.dumps({"erreur": "URL iCal non autorisée (hôte HyperPlanning attendu)."}), "application/json")
+                    return
                 try:
                     evenements_bruts, _ = obtenir_donnees(url_ics)
                     source = "live"
@@ -559,8 +585,9 @@ class Controleur(BaseHTTPRequestHandler):
                     except ValueError:
                         lundi = None
                 if lundi is None:
-                    aujourdhui = datetime.now(horaires.TZ_LOCAL)
-                    lundi = aujourdhui - timedelta(days=aujourdhui.weekday())
+                    lundi = datetime.now(horaires.TZ_LOCAL)
+                lundi = (lundi - timedelta(days=lundi.weekday())).replace(
+                    hour=0, minute=0, second=0, microsecond=0)
                 dimanche = lundi + timedelta(days=7)
 
                 filtre = (params.get("filtre", [""])[0] or "").strip().lower()
@@ -647,8 +674,11 @@ def main(argv=None):
     determiner_version()
     charger_archive()
     charger_catalogue_annuel()
+    global ANNUEL_PRET
     if INTERVALLE_ANNUEL > 0 and CATALOGUE_ANNUEL:
         boucle_annuel()
+    else:
+        ANNUEL_PRET = True   # pas de passe annuelle : ne pas afficher « en cours » indéfiniment
     try:
         evenements, ressources = obtenir_donnees(args.url, autoriser_cache=False)
         dates = [e["debut"].astimezone(horaires.TZ_LOCAL).date() for e in evenements] if evenements else []

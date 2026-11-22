@@ -314,7 +314,8 @@ function afficher(data) {
     while (i < bornes.length) {
       let finGroupe = bornes[i].mF, k = i + 1;
       while (k < bornes.length && bornes[k].mD < finGroupe) { finGroupe = Math.max(finGroupe, bornes[k].mF); k++; }
-      for (let m = i; m < k; m++) bornes[m].nbCols = Math.max(colonnesLibres.length, 1);
+      const nbColsGroupe = Math.max(...bornes.slice(i, k).map(b => b.col)) + 1;
+      for (let m = i; m < k; m++) bornes[m].nbCols = nbColsGroupe;
       i = k;
     }
     for (const c of bornes) {
@@ -409,10 +410,10 @@ function montrerFiche(c, intitule) {
     "<dt>Local</dt><dd>" + echapper(c.salle || "—") + "</dd>" +
     (ens ? "<dt>Enseignant(s)</dt><dd>" + echapper(ens) + "</dd>" : "") +
     (c.groupes && c.groupes.length ? "<dt>Groupe(s)</dt><dd>" + echapper(c.groupes.join(", ")) + "</dd>" : "") +
-    (c.formations && c.formations.length ? "<dt>Formation(s)</dt><dd>" + echapper(c.formations.map(f => f.replace(/^\\./, "")).join(", ")) + "</dd>" : "") +
+    (c.formations && c.formations.length ? "<dt>Formation(s)</dt><dd>" + echapper(c.formations.map(f => f.replace(/^\./, "")).join(", ")) + "</dd>" : "") +
     (c.maj ? "<dt>Dernière mise à jour</dt><dd>" + echapper(c.maj) + "</dd>" : "") +
-    "</dl>" +
-    (c.description ? "<dt>Description d’origine</dt><dd style='white-space:pre-wrap;font-size:12px;color:#555;'>" + echapper(c.description) + "</dd>" : "");
+    (c.description ? "<dt>Description d’origine</dt><dd style='white-space:pre-wrap;font-size:12px;color:#555;'>" + echapper(c.description) + "</dd>" : "") +
+    "</dl>";
   fiche.style.display = "block";
   voile.style.display = "block";
   document.getElementById("fermerFiche").onclick = fermerFiche;

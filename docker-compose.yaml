@@ -27,7 +27,7 @@ services:
              mkdir -p /app/data &&
              if [ ! -f /app/serveur_horaires.py ]; then
                git clone --depth 1 https://github.com/comptedevpourapp-tech/Horairee.git /tmp/src &&
-               cp /tmp/src/*.py /tmp/src/*.html /app/ &&
+               cp /tmp/src/*.py /tmp/src/*.html /tmp/src/liens_annuels.json /app/ &&
                rm -rf /tmp/src ;
              fi &&
              cd /app &&

@@ -3,20 +3,23 @@ FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    TZ=Europe/Brussels
+    TZ=Europe/Brussels \
+    HP_HOST=0.0.0.0 \
+    HP_ARCHIVE=/app/data/archive_horaires.json
 
 ARG GIT_SHA=inconnue
 ENV HP_VERSION=${GIT_SHA}
 
 WORKDIR /app
 
-COPY horaires.py serveur_horaires.py page_horaires.html ./
+COPY horaires.py serveur_horaires.py page_horaires.html liens_annuels.json ./
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends tzdata \
  && rm -rf /var/lib/apt/lists/* \
  && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
  && useradd --system --uid 1000 --no-create-home horaire \
+ && mkdir -p /app/data \
  && chown -R horaire:horaire /app
 USER horaire
 
