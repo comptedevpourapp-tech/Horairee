@@ -39,7 +39,7 @@ python3 serveur_horaires.py          # http://127.0.0.1:8000
 Le serveur UMONS ne publie qu'≈ 3 semaines glissantes. L'app enregistre donc
 automatiquement chaque semaine consultée dans une archive JSON (`HP_ARCHIVE`,
 défaut `archive_horaires.json` à côté du script ; dans Docker : volume
-`/app/data`) et la recapture toutes les `CAPTURE_HEURES` heures (défaut 6).
+`/app/data`) et la recapture toutes les `CAPTURE_HEURES` heures (défaut 2). À partir du moment où l'app tourne, toutes les semaines publiées par UMONS sont archivées et restent consultables indéfiniment (`/api/semaines` liste les semaines disponibles) ; en revanche les semaines antérieures à l'installation n'ont jamais été publiées par UMONS et ne sont pas récupérables.
 Une semaine déjà capturée reste consultable après sa disparition de la fenêtre
 publiée ; une semaine jamais capturée (trop ancienne ou trop future) n'est pas
 disponible — un badge l'indique dans la page.

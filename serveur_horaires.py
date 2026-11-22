@@ -33,7 +33,7 @@ FICHIER_ARCHIVE = Path(os.environ.get(
     "HP_ARCHIVE",
     str(Path(__file__).with_name("archive_horaires.json")),
 ))
-INTERVALLE_CAPTURE = float(os.environ.get("CAPTURE_HEURES", "6")) * 3600
+INTERVALLE_CAPTURE = float(os.environ.get("CAPTURE_HEURES", "2")) * 3600
 INTERVALLE_REPRISE = 120  # nouvelle tentative rapide tant qu'aucune donnée live n'a été obtenue
 
 CACHE = {"url": None, "quand": 0.0, "evenements": [], "ressources": None}
@@ -261,6 +261,19 @@ class Controleur(BaseHTTPRequestHandler):
                 self._envoyer(200, PAGE.read_text(encoding="utf-8"), "text/html")
             elif analyse.path == "/api/version":
                 self._envoyer(200, json.dumps({"version": VERSION_CODE}), "application/json")
+            elif analyse.path == "/api/semaines":
+                compte = {}
+                for e in list(CACHE["evenements"]) + evenements_archive():
+                    d = e["debut"].astimezone(horaires.TZ_LOCAL).date()
+                    lundi = (d - timedelta(days=d.weekday())).isoformat()
+                    compte[lundi] = compte.get(lundi, 0) + 1
+                lunes = sorted(compte)
+                self._envoyer(200, json.dumps({
+                    "semaines": [{"debut": l, "cours": compte[l]} for l in lunes],
+                    "nombre": len(lunes),
+                    "premiere": lunes[0] if lunes else "",
+                    "derniere": lunes[-1] if lunes else "",
+                }, ensure_ascii=False), "application/json")
             elif analyse.path == "/api/ressources":
                 url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
                 try:

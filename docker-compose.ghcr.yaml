@@ -22,6 +22,8 @@ services:
       HP_HOST: "0.0.0.0"
       HP_PORT: "8000"
       HP_ARCHIVE: "/app/data/archive_horaires.json"
+      # capture de l'horaire toutes les 2 heures pour n'oublier aucune semaine
+      CAPTURE_HEURES: "2"
       # Facultatif : URL iCal d'une ressource precise (diplome, promo, salle, enseignant)
       # HP_URL: "https://hplanning2026.umons.ac.be/ical/xxxx.ics?idICal=...&param=..."
 volumes:

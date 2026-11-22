@@ -100,6 +100,7 @@
   <div id="legende"></div>
   <div id="grille"></div>
   <div id="message">Chargement…</div>
+<div id="archiveInfo" style="font-size:12px;color:#666;margin-top:4px;">📂 Semaines disponibles…</div>
 <div id="version" style="font-size:11px;color:#888;margin-top:4px;"></div>
 </main>
 <div id="voile"></div>
@@ -149,6 +150,16 @@ function chargerRessources() {
     const vcode = (v.version || "inconnue").slice(0, 7);
     const p = document.getElementById("version");
     if (p) p.textContent = "Version du code déployée : " + vcode;
+  }).catch(() => {});
+  fetch(new URL("/api/semaines", location)).then(r => r.json()).then(s => {
+    const p = document.getElementById("archiveInfo");
+    if (!p) return;
+    if (s.nombre > 0) {
+      const fmt = (iso) => new Date(iso + "T00:00:00").toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit", year:"numeric"});
+      p.textContent = "📂 " + s.nombre + " semaine(s) disponible(s), du " + fmt(s.premiere) + " au " + fmt(s.derniere) + " (les semaines antérieures à l'installation n'ont jamais été publiées par UMONS et ne peuvent pas être récupérées).";
+    } else {
+      p.textContent = "📂 Aucune semaine archivée pour l'instant.";
+    }
   }).catch(() => {});
   fetch(new URL("/api/ressources", location)).then(r => r.json()).then(data => {
     catalogue = {formations: data.formations || [], salles: data.salles || [], groupes: data.groupes || []};
