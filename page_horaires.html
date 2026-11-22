@@ -98,6 +98,7 @@
   <div id="legende"></div>
   <div id="grille"></div>
   <div id="message">Chargement…</div>
+<div id="version" style="font-size:11px;color:#888;margin-top:4px;"></div>
 </main>
 <div id="voile"></div>
 <div id="fiche"></div>
@@ -142,10 +143,19 @@ function dureeTexte(e) {
 function echapper(s) { return (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 function chargerRessources() {
+  fetch(new URL("/api/version", location)).then(r => r.json()).then(v => {
+    const vcode = (v.version || "inconnue").slice(0, 7);
+    const p = document.getElementById("version");
+    if (p) p.textContent = "Version du code déployée : " + vcode;
+  }).catch(() => {});
   fetch(new URL("/api/ressources", location)).then(r => r.json()).then(data => {
     catalogue = {formations: data.formations || [], salles: data.salles || [], groupes: data.groupes || []};
     majListeRessources();
     majListeGroupes();
+    if (!catalogue.formations.length && !catalogue.salles.length && !catalogue.groupes.length) {
+      document.getElementById("message").textContent =
+        "Le serveur n'a encore aucune donnée d'UMONS (liste vide). Il retente automatiquement toutes les 2 minutes — rechargez la page d'ici quelques instants.";
+    }
   }).catch(e => {
     document.getElementById("message").textContent = "Impossible de charger la liste des ressources : " + e.message;
   });
