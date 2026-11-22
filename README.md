@@ -47,19 +47,51 @@ disponible — un badge l'indique dans la page.
 Notes :
 - Pour l'emploi du temps d'une promo précise : dans l'interface `invite?fd=1`, ouvrez la ressource, cliquez le bouton iCal et copiez le lien permanent dans `HP_URL` ou le champ de la page.
 
-## Toute l'année (flux iCal annuel)
+## Année entière, automatiquement
 
 L'export public « toutes salles » est limité par UMONS à la fenêtre publiée
-(~3 semaines glissantes) : aucun paramètre ne l'étend. En revanche, chaque
-ressource dispose dans l'interface officielle d'un **lien permanent iCal
-annuel** (tout est prévu côté client avec `d=[1..62]`) :
+(~3 semaines glissantes) : aucun paramètre ne l'étend. Les chevauchements de
+cette limite ont été contournés :
 
-1. Dans `https://hplanning2026.umons.ac.be/invite?fd=1`, ouvre ta ressource
-   (formation, salle, …).
-2. Clique le bouton **iCal** et copie le **lien permanent** (image/QR).
-3. Colle-le dans la page web de l'app, champ **« Flux iCal annuel »** → **Utiliser**.
+1. **Catalogue de flux annuels intégré** (`liens_annuels.json`) : 234
+   formations publiques de 2026-2027 (tous les bacheliers confirmés, dont
+   `.BAB2 - Ir. civil`) avec leur **lien permanent iCal annuel** — le même que
+   celui de l'interface (jeton `icalsecurise` attribué par le serveur
+   HyperPlanning, accessible sans authentification une fois récolté). Ces liens
+   ont été récoltés en pilotant le client officiel (chaque formation demande son
+   `FonctionParametresICAL`) ; les horaires de master non publiés ne sont pas
+   accessibles en mode invité et restent hors catalogue.
+2. **Fusion automatique côté serveur** : au démarrage (puis toutes les 24 h,
+   `HP_ANNUEL_HEURES`), le serveur télécharge chaque flux annuel et le fusionne
+   dans l'archive avec dédoublonnage par cours (`Cours-<id>-<n>` + horaire) :
+   un cours publié à la fois dans l'export « toutes salles » et dans le flux
+   annuel n'apparaît qu'une fois, avec la description la plus riche (code,
+   type) et les formations des deux sources.
+3. **À la demande** : sélectionner une formation hors fenêtre télécharge
+   immédiatement son flux annuel (source « annuel », badge dans la page).
 
-L'app télécharge alors l'horaire de l'année entière pour cette ressource, en
-continrant à fusionner avec l'archive locale. Le choix est mémorisé dans le
-navigateur (localStorage, clé `lical`) ; **Retirer** revient au flux public.
-Côté serveur, la variable `HP_URL` accepte aussi ce lien (historique).
+Résultat : toute semaine de l'année 2026-2027 est consultable pour les
+formations du catalogue — la navigation est indépendante de la fenêtre
+glissante, de septembre 2026 à juillet 2027.
+
+### Variables d'environnement
+
+- `HP_LIENS_ANNUELS` (défaut `liens_annuels.json` à côté du code) : chemin du
+  catalogue. Remplacable via un montage TrueNAS.
+- `HP_ANNUEL_HEURES` (défaut `24`) : rythme de rafraîchissement des flux
+  annuels en arrière-plan ; `0` désactive (ne reste que la capture glissante).
+- Champ « Secours flux iCal (optionnel) » de la page : pour une ressource non
+  couverte (ex. horaire de master protégé), coller le lien permanent copié dans
+  l'interface `invite?fd=1` (bouton iCal). Mémorisé dans le navigateur
+  (localStorage, clé `lical`) ; **Retirer** revient au flux public.
+
+### Régénérer le catalogue (nouvelles années)
+
+Les jetons `icalsecurise` sont attribués par le serveur UMONS et devraient
+rester valables toute l'année. En 2027-2028 : rejouer le récolteur
+`outils/recolter_liens.js` (Node + jsdom — il n'est pas dans l'image Docker,
+c'est un outil de maintenance) : il lance le client `invite?fd=1` dans jsdom,
+énumère `FonctionRenvoyerListeDeRessource`, puis interroge
+`FonctionParametresICAL` pour chaque formation et écrit `liens_annuels.json`
+(réprise possible : les entrées existantes sont sautées).
+

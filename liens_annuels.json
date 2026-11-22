@@ -1,0 +1,938 @@
+{
+ ".BAB1 - Architecture": {
+  "lien": "Telechargements/ical/Edt__BAB1___Architecture.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDC5BC8398E4404976CF006C343E8E1B03B6308EFF7D0BF7B7F2C1357FBBEC4A4AA",
+  "type": "formations"
+ },
+ ".BAB1 - Droit": {
+  "lien": "Telechargements/ical/Edt__BAB1___Droit.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839CA896391A2856FA05F53EB2FD20850C3A0890ED323FDE1FBC99D1CF9BBBC75F54",
+  "type": "formations"
+ },
+ ".BAB1 - Ing. de gestion": {
+  "lien": "Telechargements/ical/Edt__BAB1___Ing__de_gestion.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDC5400E8943037E8C3AFC7C26679566B6229C472BEC46131AE2355988D3AC38EF8",
+  "type": "formations"
+ },
+ ".BAB1 - Ir. civil": {
+  "lien": "Telechargements/ical/Edt__BAB1___Ir__civil.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E9980B9A5F9858110F2BB0D9860003D13FE0D3D0942BBC975DE18806ABFB00E5E24",
+  "type": "formations"
+ },
+ ".BAB1 - Ir. civil (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB1___Ir__civil__Ch_.ics?version=2026.5.8&icalsecurise=B82FBF2DECA19FF951A08F9F2AF28217B66072DD9AEED35BE753775838894D2A9B15D416F86559BAF7AEA2AFAF1E0A1F",
+  "type": "formations"
+ },
+ ".BAB1 - Ir. civil architecte": {
+  "lien": "Telechargements/ical/Edt__BAB1___Ir__civil_architecte.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB0169C47AB44A42630F635DA484DA5A51BC6B29B5A663B0C8408B6C33EAE62A10A91",
+  "type": "formations"
+ },
+ ".BAB1 - Médecine": {
+  "lien": "Telechargements/ical/Edt__BAB1___Medecine.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E99D0E211D8FE483D0BF96BC0C8F916F5EFA6FEB98273AC33C7248BED5B280C30AC",
+  "type": "formations"
+ },
+ ".BAB1 - Remises à niveau": {
+  "lien": "Telechargements/ical/Edt__BAB1___Remises_a_niveau.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839C90C3C2939EA480096AB409613C122B065BEF6028472CD57378C5DB5C8144C5A7",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. biologiques": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__biologiques.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D5971178E87B289393F85B4CF2B00BEDD5569CA5CC0C6C0082682FFDF03C535EFB7FD69",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. biologiques (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__biologiques__Ch_.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839C5CEC5CFF14C4A4DDBD25FC260B7510524279F980ED47B906AC4C3F9143F8F98B",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. biomédicales": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__biomedicales.ics?version=2026.5.8&icalsecurise=B82FBF2DECA19FF951A08F9F2AF282177C4364036A7DA6039C0254DE1EBD67284D00BAD350C2330FF1E9EBC11B5A46EF",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. chimiques": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__chimiques.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E5227461FCF2B9F300917B7AA48D7FAA408089D7F4E95F0E97B9ACB43FECDFEBBB408BA1",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. de gestion": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__de_gestion.ics?version=2026.5.8&icalsecurise=7A0870D5B709CBF2D93EEF8F0BB0619D5817C11924FCE88CA020B1C2E3528BE0568A87230B8EDFB3E1C6D3AA84E59DDE",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. de gestion (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__de_gestion__Ch_.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB016770B8C90B9D003AF680A193AADAF329D9ABF6093365B8D77A988F465B237E44B",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. humaines et sociales": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__humaines_et_sociales.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B9226E2002C79A8B0F02702CAFCA7511BB3949C25ABA1BE1BCD20AAA89BD812BB74",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. informatiques": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__informatiques.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BC395526E53228F8D0CC0D2A9D45E257F339385C0FC0AAB533749187BE47E67B5D",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. mathématiques": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__mathematiques.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D5971175DD2BD2E72270FB821F0573C11E1591B2A2FA9247B4A1C75A72A395CDAD87C6A",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. pharmaceutiques": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__pharmaceutiques.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A5140A66E0272B47E73F7009243163BB3F502440F8BE5FDF6E6E375CED34A64B6835",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. physiques": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__physiques.ics?version=2026.5.8&icalsecurise=7A0870D5B709CBF2D93EEF8F0BB0619DBB8A7DAA7ECB54F832A0886048A6444EE50240B9AA97E00DCFAB7C4A46BE3909",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. psycho. et de l'éduc., or. générale": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__psycho__et_de_l_educ___or__generale.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D597117E2F5330169235F59F4DCD42110FE48E3CE6C303A2219DF364DC32837446D7A88",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. psycho. et de l'éduc., or. générale (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__psycho__et_de_l_educ___or__generale__Ch_.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B92D738D2CE91B996AE90661D4A46CAE627067B539DB38BE568A66199470D7D57F5",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. psycho. et de l'éduc., or. logopédie": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__psycho__et_de_l_educ___or__logopedie.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E522746111490AD2F82A60910DA6AE0B0A0BA09DC0FD27FB2D25A49A486AB76C017D053A",
+  "type": "formations"
+ },
+ ".BAB1 - Sc. éco. et de gestion": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__eco__et_de_gestion.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E5227461B618576E6BFC4CEED529576B46393C1D154DD552432D5815D4870C2EA48EACCA",
+  "type": "formations"
+ },
+ ".BAB1 - Traduction et interprétation": {
+  "lien": "Telechargements/ical/Edt__BAB1___Traduction_et_interpretation.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB016217D1C9E3323A834F26748EEB079CA3DBB8804B2CDCD5181BC249115DF536470",
+  "type": "formations"
+ },
+ ".BAB1 – Sc. humaines et sociales (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB1___Sc__humaines_et_sociales__Ch_.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D59711766EB1BCB802DDFAEA3041713B128ACF3BD180DC16A2AEDC0F89EC907FDC74557",
+  "type": "formations"
+ },
+ ".BAB2 - Architecture": {
+  "lien": "Telechargements/ical/Edt__BAB2___Architecture.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514C342A684DBBF4DD1DA804FF49601B4CF8E63476A91BBCB657BCDDFF49911C284",
+  "type": "formations"
+ },
+ ".BAB2 - Droit": {
+  "lien": "Telechargements/ical/Edt__BAB2___Droit.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E995B299C2D579F874623EAA9262F69CCFDFB920FA39C36E88F53B4048596880F69",
+  "type": "formations"
+ },
+ ".BAB2 - Ing. de gestion": {
+  "lien": "Telechargements/ical/Edt__BAB2___Ing__de_gestion.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3E16BFBD9EB66F52632DA040DF87E7699AA91BB78581082B53A8EF80E3C3153A98",
+  "type": "formations"
+ },
+ ".BAB2 - Ir. civil": {
+  "lien": "Telechargements/ical/Edt__BAB2___Ir__civil.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E99CF74011618835A0A0B33DAB011F96A94229FF19CB1A7C23CBED0063470834DC7",
+  "type": "formations"
+ },
+ ".BAB2 - Ir. civil (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB2___Ir__civil__Ch_.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B92CB5856E2CC55488C05125E7438642C366EDEE5ACE076A936EE61148AD5F304B5",
+  "type": "formations"
+ },
+ ".BAB2 - Ir. civil architecte": {
+  "lien": "Telechargements/ical/Edt__BAB2___Ir__civil_architecte.ics?version=2026.5.8&icalsecurise=AECDF1F28252AF5BBE2B9397D1FC155379452B50584E3F029C4790354B6CE42F2475E9B6464A195F0E1519CC5A553709",
+  "type": "formations"
+ },
+ ".BAB2 - Médecine": {
+  "lien": "Telechargements/ical/Edt__BAB2___Medecine.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDCD5C200D8115AAB74013523D96514C307876935EF3334D0CBE330966982DFCE69",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. biologiques": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__biologiques.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F08D40BD96C29459BAA75CFEC117E96D626F7CB5A370D19E5FCFF83A7AF3FDFB7FC",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. biologiques (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__biologiques__Ch_.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839C8628FE6574FB6B4CCA3213EC86C1EC2FDE8CD879E474F2F0D36D8CD0359DB92C",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. biomédicales": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__biomedicales.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D5971179AA631A1F2ED7E9917706151DE73E31AA0C3367EAF5332F32858BC323912E2B2",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. chimiques": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__chimiques.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D597117DFA19177C9CDDDEABE3C9A926B4C46B9DEA9BB4650368DEBCEF2690C8389633F",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. de gestion": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__de_gestion.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E2ADEEF7A81351325D5FEE533BACEDB688502999CCA30549FBDC11BF8DFA1DB05",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. de gestion (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__de_gestion__Ch_.ics?version=2026.5.8&icalsecurise=B82FBF2DECA19FF951A08F9F2AF28217C2075BD37413B6ED65EF0BC0207FE13295CE26768ADF326A008FFB35891777DD",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. humaines et sociales": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__humaines_et_sociales.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839C1F5ECD5CEDB0CC3C18479018CC482DB10C79B0313B69E0998959C2BB86F16EB3",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. informatiques": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__informatiques.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E9971066407BCA56E220301EE870B4FD706FA1B8D6DEDB125F24D34AB0FA53398F1",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. mathématiques": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__mathematiques.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E9918A962C545BF804F40CF5BF308B41B294E66E46E4512BF75AD4A1AF38EB73B26",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. pharmaceutiques": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__pharmaceutiques.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BC5AB4034EFF9EF521F703D61C6E2A380E31B40A9E65917CA89F6D3E92AB57276E",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. physiques": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__physiques.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB0167CC1EDDADA05E7AA0E7AE5948AEFB38D671AF1B6541B394E5CBD34F3EA16A68C",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. psycho. et de l'éduc., or. générale": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__psycho__et_de_l_educ___or__generale.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB016749DD66203792B7457FF747A4FDED70AF7FFAC883B27B3A59D67A21A553E8787",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. psycho. et de l'éduc., or. générale (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__psycho__et_de_l_educ___or__generale__Ch_.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDC72A5D3366E6A542F5DF05D01E08198BDA4C87E7FD14BC1187C84AD313F2CA883",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. psycho. et de l'éduc., or. logopédie": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__psycho__et_de_l_educ___or__logopedie.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034EC3135B98025B1D59007C55F805FD66B39961A675A05C9D22BD71AD0D3A2DD83D",
+  "type": "formations"
+ },
+ ".BAB2 - Sc. éco. et de gestion": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__eco__et_de_gestion.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B92E07206D357D26E86BDF4A5BA15BC1E54FFDC75CB452839D978306F84D763C4BA",
+  "type": "formations"
+ },
+ ".BAB2 - Traduction et interprétation": {
+  "lien": "Telechargements/ical/Edt__BAB2___Traduction_et_interpretation.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D597117742B2C030C3715F2788383A98AA36ECF833FA757B2C90496E66093DC054AF41F",
+  "type": "formations"
+ },
+ ".BAB2 – Sc. humaines et sociales (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB2___Sc__humaines_et_sociales__Ch_.ics?version=2026.5.8&icalsecurise=B82FBF2DECA19FF951A08F9F2AF28217F6B2A94BF29EB871205DFCFF0D724510466B30C9FE124700D610223D281EB891",
+  "type": "formations"
+ },
+ ".BAB3 - Architecture": {
+  "lien": "Telechargements/ical/Edt__BAB3___Architecture.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4CACA1DE84FB15A1DCC6D6100BCBAE41B76963E4ADA886440DA1228934E90CE41",
+  "type": "formations"
+ },
+ ".BAB3 - Droit": {
+  "lien": "Telechargements/ical/Edt__BAB3___Droit.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E522746122F7480D494AD2B67F783C2AD8D626482A6D0D39868B05C01E1E7F63C83C0D61",
+  "type": "formations"
+ },
+ ".BAB3 - Ing. de gestion": {
+  "lien": "Telechargements/ical/Edt__BAB3___Ing__de_gestion.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E237A9BA822B7955181802839739DD10287F305006F62D77B5F733E9769E29231",
+  "type": "formations"
+ },
+ ".BAB3 - Ir. civil": {
+  "lien": "Telechargements/ical/Edt__BAB3___Ir__civil.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDC473C7DD0EC349D1F3FA173616B92A363795695C9F4AAD6EBD74EC7D5F9E64F57",
+  "type": "formations"
+ },
+ ".BAB3 - Ir. civil (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB3___Ir__civil__Ch_.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034EE846BD27B715E9F78A22F482A376FC096E1F6C278F8C9747268773B70F8E7C76",
+  "type": "formations"
+ },
+ ".BAB3 - Ir. civil architecte": {
+  "lien": "Telechargements/ical/Edt__BAB3___Ir__civil_architecte.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E5227461102E0364CA5FB63380CCD7DD556B6413C2D83364CAEA4DFE721891B6E3DCF849",
+  "type": "formations"
+ },
+ ".BAB3 - Médecine": {
+  "lien": "Telechargements/ical/Edt__BAB3___Medecine.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB016F09C46A368AB9B12E8FE980FE1DA01F17FE03905EC58092D9C36E7DBB8A1BF6C",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. Psycho. et de l'éduc., or. générale": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__Psycho__et_de_l_educ___or__generale.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3E577FEBDA9C56CCF69BE395131936E67E7A829940BB62D6FC11D1039FC9B43474",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. biologiques": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__biologiques.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3E1EC1CBC285DB5D0573689FD2F4E534792C3B15A4C61D38CDAE6BDC65F032454D",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. biologiques (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__biologiques__Ch_.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BCD160112A8F2371DCB28ABD92310AAF6137836985603321774A70F4C591CCCBEC",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. biomédicales": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__biomedicales.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3E123DAED502B7BDFA439A0884977FAC1C11EC166F07D8BDA0D799E26B05CEAC30",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. chimiques": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__chimiques.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BC3148ECC70043D109497168E72DC677CECD199CD5E647A0C573FB9615E370360E",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. de gestion": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__de_gestion.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514E8EA98BF9D8CFF4D56B88ABD36ACA818EC9543F566C183AF2A60BC01EC53904A",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. de gestion (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__de_gestion__Ch_.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514A499F664FB5F4F8A47439678876C52D2FA93E0C977F7C78BF1B111008850E0EF",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. humaines et sociales": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__humaines_et_sociales.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514F6E720B71BD4C104A0419A9A2B6D924ABC57B782C23DD6254044D6F0B926A53D",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. informatiques": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__informatiques.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDCB2E62CD87C9D96FF6B08F25A81F268753E43849FCD0410DE2CBBDCAECA0626FB",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. mathématiques": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__mathematiques.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A5142D69611F6BB055AC9B2015A30E57DBA9C5735D6C1FE64C8EA32A3AF4BB9346B2",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. pharmaceutiques": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__pharmaceutiques.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E52274611016F46F151E5815E461C06573CF05F39973A8339012AA845CAA363F480BB286",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. physiques": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__physiques.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A51429C096DDB3E1E3C5C74ED3AF97B604079C8CAFDECA860D5F1F2340527AC8B8B6",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. psycho. et de l'éduc., or. générale (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__psycho__et_de_l_educ___or__generale__Ch_.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA44A1B8758B1C89A52278DBA0432B413BACD272AD776EA018A4DF6D73224D5FEAA",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. psycho. et de l'éduc., or. logopédie": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__psycho__et_de_l_educ___or__logopedie.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D5971170FFAB90B4300F1EE8F697EF4FBB2809FD0F7FEC030A532F1875893DDFC863F67",
+  "type": "formations"
+ },
+ ".BAB3 - Sc. éco. et de gestion": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__eco__et_de_gestion.ics?version=2026.5.8&icalsecurise=B82FBF2DECA19FF951A08F9F2AF282174998A3163082D962107CEEDD565F03FC1C0DB10D6C4790E5DC0022CD16D1EF76",
+  "type": "formations"
+ },
+ ".BAB3 - Traduction et interprétation": {
+  "lien": "Telechargements/ical/Edt__BAB3___Traduction_et_interpretation.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E998772F6321C1DBABB7A715AA85CD029F3667AC447CB239DE2446C7496556FAE3B",
+  "type": "formations"
+ },
+ ".BAB3 – Sc. humaines et sociales (Ch)": {
+  "lien": "Telechargements/ical/Edt__BAB3___Sc__humaines_et_sociales__Ch_.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839C4AA784038EF5444F220AD8C25C4FEA3F857F6B9639F679B634509BE26D129F78",
+  "type": "formations"
+ },
+ ".Bloc Compl. MA Droit": {
+  "lien": "Telechargements/ical/Edt__Bloc_Compl__MA_Droit.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E1FDBA9847D86E0918B65EC3A666F9AEB5A203CCA907D052E023DFEF175C54183",
+  "type": "formations"
+ },
+ ".Bloc compl. MA - Politique éco. et sociale": {
+  "lien": "Telechargements/ical/Edt__Bloc_compl__MA___Politique_eco__et_sociale.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514BBD0B5D932FDE32448790B1713ABA178BBFE109A4E732E72CE68B50B32D12A4C",
+  "type": "formations"
+ },
+ ".Bloc compl. MA - Sc. informatiques": {
+  "lien": "Telechargements/ical/Edt__Bloc_compl__MA___Sc__informatiques.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F08938F807F2DB257E96D28D11AFE845EDE95F57F5770FD6F2A78EFC2C6B977967F",
+  "type": "formations"
+ },
+ ".Bloc compl. MA - Sc. informatiques (Ch)": {
+  "lien": "Telechargements/ical/Edt__Bloc_compl__MA___Sc__informatiques__Ch_.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D59711798BBCFEA5A334EFC957ED77BE9F2258EB35BE6EB1A8D0946B584B08052180C58",
+  "type": "formations"
+ },
+ ".Bloc compl. MA - Transitions et innovations soc.": {
+  "lien": "Telechargements/ical/Edt__Bloc_compl__MA___Transitions_et_innovations_soc_.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BC128840B68D11FDF681E8C163B5200BC95D4638E65D77A7F6DDDD1107E5AEC922",
+  "type": "formations"
+ },
+ ".Bloc compl. MA120 - Sc. de gestion": {
+  "lien": "Telechargements/ical/Edt__Bloc_compl__MA120___Sc__de_gestion.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B9275C45760E2021A30A39D9E992D877E0BE993DE2A94BEFE14410A24511E7DC5AE",
+  "type": "formations"
+ },
+ ".Bloc compl. MA120 - Sc. de gestion (Ch)": {
+  "lien": "Telechargements/ical/Edt__Bloc_compl__MA120___Sc__de_gestion__Ch_.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839CFB828AF58C3FE92BC716E387FBA035052728D22BE2B440C02AAF939E6FCE86E1",
+  "type": "formations"
+ },
+ ".Bloc compl. MA60 - Sc. de gestion": {
+  "lien": "Telechargements/ical/Edt__Bloc_compl__MA60___Sc__de_gestion.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E52274613255F1BF039EC1878906C00DED9B42735F6507CF401665D2AE7477076B48D42B",
+  "type": "formations"
+ },
+ ".Bloc compl. MA60 - Sc. de gestion (Ch)": {
+  "lien": "Telechargements/ical/Edt__Bloc_compl__MA60___Sc__de_gestion__Ch_.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A5144FA27FFB9D28D62220241DF8BE2AD6AFCE09A7E823D1CB1944654A2019C4AE62",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Architecture": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Architecture.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB016C2746115A0BF4D70E0A330A5B16D617496CD9A22BA5E507DB7EC16C34995715F",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Biologie": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Biologie.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E995AD941AF3EE0AC58B2CDAE0E0AAEA7A258D11DA80CD30A76A68DC3046C9C8470",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Biomed": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Biomed.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDC3DE69D245C95FEFBFBAC7D89B59A78F4B3B7AA9500282576282333C4E0C5AEDD",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Chimie": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Chimie.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D597117B5F061A6B953EC2C655B4ED287627F2DB37F88D2AB9FCC143351AE50090BD602",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Info": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Info.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BC95A2B016714025B8097B76100D85C573614FFDF05C068B6A7C6EAA97CA069BB1",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Math": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Math.ics?version=2026.5.8&icalsecurise=7A0870D5B709CBF2D93EEF8F0BB0619D0542E95A0AFBE00E0E46D5B82B470EC7C4187FEADD78DA732FE36BA4063D02A8",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Physique": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Physique.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514DC01B5E1F2357B1E336EE5929AA8CA4371BDB9DBFD9E7FB9161740151E7E9DE0",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Sc. Pharma": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Sc__Pharma.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDCBE78BA6D1675FB43F9A53EF831289661A32DBFB9629B47538EA52C464AB00A8B",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Sc. Psycho et de l'éduc": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Sc__Psycho_et_de_l_educ.ics?version=2026.5.8&icalsecurise=AECDF1F28252AF5BBE2B9397D1FC1553B139D96B94262FC28C76D94DC2612F13B8D724E33D3E872EAEA245B89826BEDA",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Sc. sociales": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Sc__sociales.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514C119EA05EEDA0C78FE90359BC2FD605CCB6FDCDD3C557FA1B2DFCC59A49871C0",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Sc. éco": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Sc__eco.ics?version=2026.5.8&icalsecurise=AECDF1F28252AF5BBE2B9397D1FC155382858A91E546A274B14CB8FA1E19832EAA12D47B29BE86A87B8097FDEBDA994F",
+  "type": "formations"
+ },
+ ".MA60 - Ens. Section 5 - Traduc et interprétation": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens__Section_5___Traduc_et_interpretation.ics?version=2026.5.8&icalsecurise=B82FBF2DECA19FF951A08F9F2AF28217C182EF0BE01A60D0AD66E980048BE68B8BCC2D396B4B9E0C8768DDB88A2061A8",
+  "type": "formations"
+ },
+ ".MA60 - Ens.Section 5 - Sc. ingénieur": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens_Section_5___Sc__ingenieur.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D5971177A6F4D0D799CEE69B6BE2EAD413EB11AD64766454DD671454E24A5132354CE3F",
+  "type": "formations"
+ },
+ ".MA60 - Ens.Section 5 - Urba": {
+  "lien": "Telechargements/ical/Edt__MA60___Ens_Section_5___Urba.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F0893AA79672DE849122A0063CC0199853CB569D0BCD43A76AFEF52FFF3D7B40CA2",
+  "type": "formations"
+ },
+ ".MA60 - Sc. biologiques": {
+  "lien": "Telechargements/ical/Edt__MA60___Sc__biologiques.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B9260C3A57227F78ADA80E8FCC820DDCF4F76AAB2EF724F87D7C124E7B2FEF501A5",
+  "type": "formations"
+ },
+ ".MA60 - Sc. chimiques": {
+  "lien": "Telechargements/ical/Edt__MA60___Sc__chimiques.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F0829015CD63986602EF4ACEE9AE147CACF779DD223AF33D749B106516B05877A8A",
+  "type": "formations"
+ },
+ ".MA60 - Sc. de gestion": {
+  "lien": "Telechargements/ical/Edt__MA60___Sc__de_gestion.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB0161684E856CB163F2D1890D53C254E6800B7E8B0801DD53AE6D117C1196BF2EA20",
+  "type": "formations"
+ },
+ ".MA60 - Sc. de gestion (Ch)": {
+  "lien": "Telechargements/ical/Edt__MA60___Sc__de_gestion__Ch_.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BC856DA8862C8C7FC41A325B5DFDEF59F1AAC5559ECFAE7264B56E13AC23A0A894",
+  "type": "formations"
+ },
+ ".MA60 - Sc. informatiques": {
+  "lien": "Telechargements/ical/Edt__MA60___Sc__informatiques.ics?version=2026.5.8&icalsecurise=B82FBF2DECA19FF951A08F9F2AF28217DE255A7C443C5EF09CC566B89C7ECD849D9686349F111FCA05E151451F0860CB",
+  "type": "formations"
+ },
+ ".MA60 - Sc. informatiques (Ch)": {
+  "lien": "Telechargements/ical/Edt__MA60___Sc__informatiques__Ch_.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514862C31E7C3FFD77C8A6D721390C51722B13CD85A1E82433442482B6D5B4B54AC",
+  "type": "formations"
+ },
+ ".MA60 - Sc. mathématiques": {
+  "lien": "Telechargements/ical/Edt__MA60___Sc__mathematiques.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E5227461E398BECF83D81B64C6960228A65A4318109D5A64559AC33A9FD05485BA4433B5",
+  "type": "formations"
+ },
+ ".MA60 - Sc. physiques": {
+  "lien": "Telechargements/ical/Edt__MA60___Sc__physiques.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BC520463F51972B32D4027C90AD30EFE1B9F953C4610031B14C35965FBD8199019",
+  "type": "formations"
+ },
+ ".MAB1 - Alternance - Sc. informatiques, FS prof. (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB1___Alternance___Sc__informatiques__FS_prof___Ch_.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4B1CE3B28AF32D34542A2E29C9401C8E5600AC5836F18D4975052115CDF9799C9",
+  "type": "formations"
+ },
+ ".MAB1 - Architecture, FS art de bâtir": {
+  "lien": "Telechargements/ical/Edt__MAB1___Architecture__FS_art_de_batir.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D5971176F4202300C0D105EDC071CB2773EAD6DD3C41CF08363AD8497439924796BB640",
+  "type": "formations"
+ },
+ ".MAB1 - Architecture, FS urbanisme": {
+  "lien": "Telechargements/ical/Edt__MAB1___Architecture__FS_urbanisme.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3E19D9B9210CE46E43D67E93A80F3D3EA7FDFAFA9045D93B7F3B449123319B75D7",
+  "type": "formations"
+ },
+ ".MAB1 - Biochimie et bio. mol. et cellulaire": {
+  "lien": "Telechargements/ical/Edt__MAB1___Biochimie_et_bio__mol__et_cellulaire.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839C2FA00A5833CD68A3C936C1667ED7C6B3B6DD9462FA0279DB2FF24010453A5A3E",
+  "type": "formations"
+ },
+ ".MAB1 - Biochimie et bio. mol. et cellulaire (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB1___Biochimie_et_bio__mol__et_cellulaire__Ch_.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA41C3C731232739FFD8F1A2190397FE51B1F7DE6E8DB71B88B099594BFB1DE0450",
+  "type": "formations"
+ },
+ ".MAB1 - Biologie des organismes et écologie": {
+  "lien": "Telechargements/ical/Edt__MAB1___Biologie_des_organismes_et_ecologie.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E2FF84E3731A1685EF73A838AF2D43AE266A9F508B1A007C9C51F8051640A14D1",
+  "type": "formations"
+ },
+ ".MAB1 - Droit": {
+  "lien": "Telechargements/ical/Edt__MAB1___Droit.ics?version=2026.5.8&icalsecurise=AECDF1F28252AF5BBE2B9397D1FC1553F5FCF10336B460582E97C5F0BA77D6127A4C53B0B791F583FBBF905CBC7E4B19",
+  "type": "formations"
+ },
+ ".MAB1 - Ens. Section 4 - Biologie": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ens__Section_4___Biologie.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F08CCF849A1ABF196814DCF869743650C46260272ED2CE68F71E2571E7B7D34CBF0",
+  "type": "formations"
+ },
+ ".MAB1 - Ens. Section 4 - Chimie": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ens__Section_4___Chimie.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E426F5036681814246CEC0947637454794B7954D4B4743FBF65CAF36CF0EAA514",
+  "type": "formations"
+ },
+ ".MAB1 - Ens. Section 4 - Langues Modernes": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ens__Section_4___Langues_Modernes.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514C9633E09E76D07F0CC4DD230BD82D88DD7FEA68EF39286919BBC7740A16AC0F9",
+  "type": "formations"
+ },
+ ".MAB1 - Ens. Section 4 - Physique": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ens__Section_4___Physique.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839C1B90F206DA5E269BDBA9004CAFE3255F3E070EABCD96A1A8D61C12CAD68AABB7",
+  "type": "formations"
+ },
+ ".MAB1 - Ens. Section 4 - Traduc et interprétation": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ens__Section_4___Traduc_et_interpretation.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA42F677E2976001D0ACFE75DF5117524820815E2ECC285872A58D2EAFAEBEFC480",
+  "type": "formations"
+ },
+ ".MAB1 - Ens.Section 4 - Math": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ens_Section_4___Math.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D597117CAC7ED8240270C7FF9862CAED2AFEF2A080F4F1D8AD3600659327A1638757B75",
+  "type": "formations"
+ },
+ ".MAB1 - Ing. de gestion, FS": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ing__de_gestion__FS.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E522746184F883E19C5C099357AED971579B568043A7D5D70AC951A93D68A6350D0B37EC",
+  "type": "formations"
+ },
+ ".MAB1 - Interprétation": {
+  "lien": "Telechargements/ical/Edt__MAB1___Interpretation.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F0891415F9DA6BDB8AA441635F43A5E93C83F08FDA5DE94960C09096926019639F3",
+  "type": "formations"
+ },
+ ".MAB1 - Ir. civil architecte, FS": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ir__civil_architecte__FS.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB01666848B89CA2694C82D8BF82670C8A8C1DE6A73FC010903CCF1DD50552C3D86AD",
+  "type": "formations"
+ },
+ ".MAB1 - Ir. civil chimie et SDM, FS": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ir__civil_chimie_et_SDM__FS.ics?version=2026.5.8&icalsecurise=AECDF1F28252AF5BBE2B9397D1FC155319BE44C9E336B65696FB588703712A200EE27F17123F034054D10AD11AF586E5",
+  "type": "formations"
+ },
+ ".MAB1 - Ir. civil informatique et gestion (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ir__civil_informatique_et_gestion__Ch_.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F086C98D250A1703225532340252C73B5997D506C7B6EB1A7906A804FADC9C1F7A0",
+  "type": "formations"
+ },
+ ".MAB1 - Ir. civil informatique et gestion, FS AIDA": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ir__civil_informatique_et_gestion__FS_AIDA.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E5227461C122BC51FDFB7B0AE5DF2740A30DF17E83B5C37A750BCB0ED0EA7BCD15E53762",
+  "type": "formations"
+ },
+ ".MAB1 - Ir. civil informatique et gestion, FS Cybersecurity": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ir__civil_informatique_et_gestion__FS_Cybersecurity.ics?version=2026.5.8&icalsecurise=7A0870D5B709CBF2D93EEF8F0BB0619DE860E90A1E1BA86213BC6CAD1F3A13DAFBFDFFF6CF38029E79AC18E7C9CB25E3",
+  "type": "formations"
+ },
+ ".MAB1 - Ir. civil mines et géologue, FS": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ir__civil_mines_et_geologue__FS.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB0169C01B02C759210D72936814BB72EE35A1DF26F040336F4B4E91B2BE4BC23D17F",
+  "type": "formations"
+ },
+ ".MAB1 - Ir. civil mécanicien, FS": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ir__civil_mecanicien__FS.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB0169C214EDE8C323B82CF618BD52B7661BACA647343F13B3633A21A28162FA3EF52",
+  "type": "formations"
+ },
+ ".MAB1 - Ir. civil électricien, FS": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ir__civil_electricien__FS.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F08F415FB984643DD4E796DB1D19CFE96E02A2DDF1633F924BD0F91B76EDF31B765",
+  "type": "formations"
+ },
+ ".MAB1 - Ir. civil énergie, FS Energy Production& Usage in Industr": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ir__civil_energie__FS_Energy_Production__Usage_in_Industr.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4CAC53E54B54BF3679B64A7BED2138243FEAF52E752FFD207F52A0685AF19562C",
+  "type": "formations"
+ },
+ ".MAB1 - Ir. civil énergie, FS Energy Usage in Cities& Communities": {
+  "lien": "Telechargements/ical/Edt__MAB1___Ir__civil_energie__FS_Energy_Usage_in_Cities__Communities.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3EC7791FF5BD771EF75772EC5E6ED9DDBDC9E6FCF553680A267FD0B92437AB1BE0",
+  "type": "formations"
+ },
+ ".MAB1 - Médecin": {
+  "lien": "Telechargements/ical/Edt__MAB1___Medecin.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839CFAAEFF99D7F09A182A3D6A2E515A265042EF64F1BE49856E9142BE8EC468FEBC",
+  "type": "formations"
+ },
+ ".MAB1 - Politique éco. et soc., FS coll. terr.": {
+  "lien": "Telechargements/ical/Edt__MAB1___Politique_eco__et_soc___FS_coll__terr_.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034EB833C79CC0D830DEA555EC56FD30C9D87546022182FA8D70A0532F0D03257D94",
+  "type": "formations"
+ },
+ ".MAB1 - Politique éco. et soc., FS pol. éco. soc.": {
+  "lien": "Telechargements/ical/Edt__MAB1___Politique_eco__et_soc___FS_pol__eco__soc_.ics?version=2026.5.8&icalsecurise=B82FBF2DECA19FF951A08F9F2AF282170EB8967FEE2F5221C3E64C22CECF2A57559E434A785994CA76BFD255F054C639",
+  "type": "formations"
+ },
+ ".MAB1 - Politique éco. et soc., FS socio-pol.": {
+  "lien": "Telechargements/ical/Edt__MAB1___Politique_eco__et_soc___FS_socio_pol_.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839C1B6E7C5C0F7AEFB3D98E8EEA48B0E0D4457EF1E51829B15D8E2406051C904A25",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. biomédicales, FA": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__biomedicales__FA.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDC5C6352E65D171A312E33D2D6A99A6C64EE89CB92038A734B8DE62A49F0952910",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. biomédicales, FS neuroscience": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__biomedicales__FS_neuroscience.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D59711715C303757D728DB0637A80FADB911C1E507A34304DACA81708B34335419B76E3",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. chimiques": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__chimiques.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4488E3AEEBD04A89ACDCF4D07D5582651121016D65966A930997A38A7C7459ED2",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. de gestion, FD": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__de_gestion__FD.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E999B499484F62544F06655EF7B3A728FB09ADAE8932DC6FE342B4CFB43745894EA",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. de gestion, FS": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__de_gestion__FS.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BC16C874A0A39810D3CBBE21AD79908319FE105A0CFF910F8421054994DA803F70",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. de gestion, FS management (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__de_gestion__FS_management__Ch_.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDC8AA4F6AA31EF4F998E34AEB78055BCCFD9A302E7A28A43768C49D0C12EDC07CF",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. de l'éducation, FA": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__de_l_education__FA.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E52274611A2C67671C588D4DE74DC6E5C7A17D0F65E12E1BAD573E4AEF6A5F0E2D1C3581",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. de l'éducation, FS action sociale": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__de_l_education__FS_action_sociale.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BC230300C1D28EF2154D6CA6B5A6A3A08C6EFEDEF3F60A661BEDF896849D3F8E28",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. de l'éducation, FS action sociale (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__de_l_education__FS_action_sociale__Ch_.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4DB6D64437053FFEECCABE3A67CE3AA90BE608E3E83A62E322F74045FEB742631",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. de l'éducation, FS adapt. scolaire": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__de_l_education__FS_adapt__scolaire.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E33BE3184EA46610C9218152536539FD57E7D1FA0FA4151C2D93EDBDCDD040443",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. de l'éducation, FS enseignement": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__de_l_education__FS_enseignement.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F089854779DB82B418D7317D3A41E9173B1DD149EB8316B1BEB8FD8700666F9CD6C",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. de l'éducation, FS enseignement (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__de_l_education__FS_enseignement__Ch_.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514AE7C68A2566FD7BFFD57E26A8ABE4089EA8675475A6692CB27C62370FC0111D1",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. de l'éducation, FS technologie": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__de_l_education__FS_technologie.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034EAA2FF2D846EDC1A075418BDC3A5ABA8B2B4EE365629353024C9361A26285E52C",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. de l'éducation, FS technologie (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__de_l_education__FS_technologie__Ch_.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4EFD0813C9B1C90E8F2D519BF7C10D0B74055982F9C0D6A79FD9DE954F8AE9275",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. infirmières": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__infirmieres.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034EA67154BFC59C19988F5ADB33A6A635BBBD959C3396AC664927DB44B00F014247",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. informatiques, FA": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__informatiques__FA.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839C94D8872EDB46366BFFA31061E0995CAF349EC69016FC82504CF71C7D700007F0",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. informatiques, FS": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__informatiques__FS.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BCD9925ECEE756FDB96D814311AF888B6C763C83771B0C799258D62150B770FDEB",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. informatiques, FS AIDA": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__informatiques__FS_AIDA.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E4D7FA877BDE0521896B9F2CEF3B538E9D674CBCA0B9993025DB5FCDEAC1D4F5E",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. mathématiques, FA": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__mathematiques__FA.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3ED1BB337DDFFE7AA850A4942E2053C609C7AEC116B1BE7390F66E293474F40999",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. mathématiques, FD": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__mathematiques__FD.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E99CDB96619C5E96D6035A871CE51F29610ACEE8F3F222E6D922F8E9DFA4F03AEC5",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. mathématiques, FS finance": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__mathematiques__FS_finance.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E01DB720E581902CCF89AEDC427AE1B3045447AFE0511B7C6E5525EC82B22DF0E",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. mathématiques, FS informatique": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__mathematiques__FS_informatique.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA475FE8B2E4E99949E50107DECD6C8315300C30FBB00D5540A63721BF2413C5BC1",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. pharmaceutiques": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__pharmaceutiques.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E550ABCC7DB0732B2A9F145E56992C4251588E465B9BD8E0893F6880A5B6864FE",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. physiques, FA": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__physiques__FA.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDCACCC10094A60CD7D2C7A9D3A363EB09FFFE4743BD77E0325DE1CAAE842051A72",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. physiques, FD": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__physiques__FD.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B9297AA36A4C65B933C8FC3724449A41C71C0B20C892219B4A8B395ED7D8A99E27E",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. psychologiques, FA": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__psychologiques__FA.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3E1115580282818B271B3E108BB6AF7206EBAEC36A5178E3011EE0C7EBA44807AA",
+  "type": "formations"
+ },
+ ".MAB1 - Sc. psychologiques, FS": {
+  "lien": "Telechargements/ical/Edt__MAB1___Sc__psychologiques__FS.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E52274613B6A2577AADFC55DCEE6709EAD0381B53A7EB76C94BB6B72339E5835886CD465",
+  "type": "formations"
+ },
+ ".MAB1 - Traduction, FA": {
+  "lien": "Telechargements/ical/Edt__MAB1___Traduction__FA.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4A692FEF956ED2B65F271D6994E6A8EA26AC635129CDA944BAB5ED876AE1CFF31",
+  "type": "formations"
+ },
+ ".MAB1 - Traduction, FD": {
+  "lien": "Telechargements/ical/Edt__MAB1___Traduction__FD.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514EEAD864F466706C9CEE8C3571BEA75527433DB6D790217EFD99E121F9663F3B3",
+  "type": "formations"
+ },
+ ".MAB1 - Traduction, FS trad. interculturel": {
+  "lien": "Telechargements/ical/Edt__MAB1___Traduction__FS_trad__interculturel.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E9908F77F919229B1A5D41F636D1A61726E0D00C7118EA921947238CDE6D907C796",
+  "type": "formations"
+ },
+ ".MAB1 - Traduction, FS trad. multidisciplinaire": {
+  "lien": "Telechargements/ical/Edt__MAB1___Traduction__FS_trad__multidisciplinaire.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A5147F04B244C09AF6A4A6BB8FF8182EC0D4884903545E60382464B863819495402D",
+  "type": "formations"
+ },
+ ".MAB1 - Transitions et innovations soc.": {
+  "lien": "Telechargements/ical/Edt__MAB1___Transitions_et_innovations_soc_.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D59711783D7BFBBE22A5DB556F76E4D0E8D46F019E2AE4361BE1EBA5DDFEE25FD3A8AD6",
+  "type": "formations"
+ },
+ ".MAB1 - Urba et Dév territorial (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB1___Urba_et_Dev_territorial__Ch_.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F08F692E7FFF863EE76C390099F0031E2D76E21B59B7936A87FF65ADF7E91E24A65",
+  "type": "formations"
+ },
+ ".MAB1 en orthopédagogie clinique": {
+  "lien": "Telechargements/ical/Edt__MAB1_en_orthopedagogie_clinique.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E5227461A237E3887B80D3CDCF051A47328384260BE32524768042C803BD3A11450F5CE4",
+  "type": "formations"
+ },
+ ".MAB2 - Alternance - Sc. informatiques, FS prof. (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB2___Alternance___Sc__informatiques__FS_prof___Ch_.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D59711789C1D49CECDFBD452E4B918BBCC6A6D95A223556FCA215100F7089F040CFDD29",
+  "type": "formations"
+ },
+ ".MAB2 - Architecture, FS art de bâtir": {
+  "lien": "Telechargements/ical/Edt__MAB2___Architecture__FS_art_de_batir.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B929A049A67CFEFEB0B94443F28F9AAF28CD593BB2987A0A55183DC707EA41A57FE",
+  "type": "formations"
+ },
+ ".MAB2 - Architecture, FS urbanisme": {
+  "lien": "Telechargements/ical/Edt__MAB2___Architecture__FS_urbanisme.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB016A14E8AF02F3D30EA8957D6CC9EF1E9E452A59BAA11B7321D77242FADCE933A10",
+  "type": "formations"
+ },
+ ".MAB2 - Biochimie et bio. mol. et cellulaire (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB2___Biochimie_et_bio__mol__et_cellulaire__Ch_.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB01692BA753BEAF57C875B74A7508B06126BA2123DD60A19A1D4BEF770555A65925F",
+  "type": "formations"
+ },
+ ".MAB2 - Biochimie et bio. mol. et cellulaire, FA": {
+  "lien": "Telechargements/ical/Edt__MAB2___Biochimie_et_bio__mol__et_cellulaire__FA.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E522746187CDBF97117D660A6CD3828F0B4178D1725B67974C9DAA3CD86522E4F9CDDD3E",
+  "type": "formations"
+ },
+ ".MAB2 - Biochimie et bio. mol. et cellulaire, FD": {
+  "lien": "Telechargements/ical/Edt__MAB2___Biochimie_et_bio__mol__et_cellulaire__FD.ics?version=2026.5.8&icalsecurise=7A0870D5B709CBF2D93EEF8F0BB0619D98FF5913C05F121AA8A6A032EC5A877BD2EEE5ECCF468E29C0ADC5C487C9347E",
+  "type": "formations"
+ },
+ ".MAB2 - Biochimie et bio. mol. et cellulaire, FS": {
+  "lien": "Telechargements/ical/Edt__MAB2___Biochimie_et_bio__mol__et_cellulaire__FS.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E4B4C72C9EBA7D8F9521B1988B3AF1CC456FAA3320258A512101BB36A9A99DF08",
+  "type": "formations"
+ },
+ ".MAB2 - Biologie des organismes et écologie, FA": {
+  "lien": "Telechargements/ical/Edt__MAB2___Biologie_des_organismes_et_ecologie__FA.ics?version=2026.5.8&icalsecurise=07E7884CEE7DE4AD42145BB7E5227461ED7F266F15CF55EEE1081B6CFBEC8096F7819C77B52696AD6123240581D6BF92",
+  "type": "formations"
+ },
+ ".MAB2 - Biologie des organismes et écologie, FD": {
+  "lien": "Telechargements/ical/Edt__MAB2___Biologie_des_organismes_et_ecologie__FD.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E9937FC38D58FA144ED542F20D12C2ED140A1755DA99A28B35969C0D43242C8EFFE",
+  "type": "formations"
+ },
+ ".MAB2 - Biologie des organismes et écologie, FS": {
+  "lien": "Telechargements/ical/Edt__MAB2___Biologie_des_organismes_et_ecologie__FS.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDCCE90FE95EE8EB0E9462706C2E534695A6636801779A1023572F0D30823379362",
+  "type": "formations"
+ },
+ ".MAB2 - Droit": {
+  "lien": "Telechargements/ical/Edt__MAB2___Droit.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839C5AE8EACA8FFBBA0EF3C9EB64DE8E9D024C95A4835A57AF7092D1834838AE171C",
+  "type": "formations"
+ },
+ ".MAB2 - Ens. Section 4 - Biologie": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ens__Section_4___Biologie.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4B1F3BE13A04819408F9AD19EB85A9832055ED0055D0FB3B2DDCA9567442E75A1",
+  "type": "formations"
+ },
+ ".MAB2 - Ens. Section 4 - Chimie": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ens__Section_4___Chimie.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDCCB2B91ED186C7486DEBAE9B94D8AF259F79D1C558E9C0269156FAC79B400EF96",
+  "type": "formations"
+ },
+ ".MAB2 - Ens. Section 4 - Langues Modernes": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ens__Section_4___Langues_Modernes.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3EA024E18720D8F64433F90C7D45A5809CDA3372CC56BB277B977FF713C3120D14",
+  "type": "formations"
+ },
+ ".MAB2 - Ens. Section 4 - Math": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ens__Section_4___Math.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4598DA32DA09658B00EEDECACBAD1578267C200DA313E20DF7018D8EBA52017EF",
+  "type": "formations"
+ },
+ ".MAB2 - Ens. Section 4 - Traduc et interprétation": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ens__Section_4___Traduc_et_interpretation.ics?version=2026.5.8&icalsecurise=B82FBF2DECA19FF951A08F9F2AF28217E64FBE3B4D0B9ED1F30CF21E059574AB44D022750064EF7147C048CA17DF3A03",
+  "type": "formations"
+ },
+ ".MAB2 - Ens.Section 4 - Physique": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ens_Section_4___Physique.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA464BA7EA066B2BCF400F39200F71F47F64C30DE37F75585432FB583673AFBB7F3",
+  "type": "formations"
+ },
+ ".MAB2 - Ing. de gestion, FS": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ing__de_gestion__FS.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BC47F5C18A22FECDE53BEF21B9BF636E1D404FEA9FA4037FB8242A21C53C0534A2",
+  "type": "formations"
+ },
+ ".MAB2 - Interprétation": {
+  "lien": "Telechargements/ical/Edt__MAB2___Interpretation.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4FE93A661D7886B963A4899AFED41EFD3B46E68603D8BE32416A5D26AFAFDFDA4",
+  "type": "formations"
+ },
+ ".MAB2 - Ir. civil architecte, FS": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ir__civil_architecte__FS.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D597117876C5104C7BC22E8BC575079E8FEE2FE8543F59B23E4BEDCF6EB955346E7EDE2",
+  "type": "formations"
+ },
+ ".MAB2 - Ir. civil chimie et SDM, FS": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ir__civil_chimie_et_SDM__FS.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034EC877588267351611501D98217E8CD0DE94A6B96ABB0EC9CB9FB1331DBEF27166",
+  "type": "formations"
+ },
+ ".MAB2 - Ir. civil génie de l'énergie, FS Energy Production& Usage": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ir__civil_genie_de_l_energie__FS_Energy_Production__Usage.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4104F4A8223AFD4BF8E0D97BD6150F98F0E9F7669FD2DCC862159056FC194EF79",
+  "type": "formations"
+ },
+ ".MAB2 - Ir. civil génie de l'énergie, FS Energy Usage in Cities&": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ir__civil_genie_de_l_energie__FS_Energy_Usage_in_Cities_.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDCD76C81C8B90A696D80550F7428D17063412918855ADE793904DB78B95E554398",
+  "type": "formations"
+ },
+ ".MAB2 - Ir. civil informatique et gestion, FS AIDA": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ir__civil_informatique_et_gestion__FS_AIDA.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D597117F80E01ACF0A8C7A98FE89BA732D189D30B49A5F9017E24655EC8A4E0C37E268C",
+  "type": "formations"
+ },
+ ".MAB2 - Ir. civil informatique et gestion, FS Cybersecurity": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ir__civil_informatique_et_gestion__FS_Cybersecurity.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D597117D0E49C969A4D88DA13E27DCFF48E9D45AC6FA1C70D4D4C5FF0894C8110BA5E77",
+  "type": "formations"
+ },
+ ".MAB2 - Ir. civil mines et géologue, FS": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ir__civil_mines_et_geologue__FS.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F088DD77BA8E2984FCED7EDC2992293BC1B5DAF6F96386EFFC6DC479E0BCC916018",
+  "type": "formations"
+ },
+ ".MAB2 - Ir. civil mécanicien, FS": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ir__civil_mecanicien__FS.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BC8CB10F53BAD4405731007F0DD2D214276D10F389593AE8016A555EDC8B94A3F7",
+  "type": "formations"
+ },
+ ".MAB2 - Ir. civil électricien, FS": {
+  "lien": "Telechargements/ical/Edt__MAB2___Ir__civil_electricien__FS.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BCF12423671232A84CA7D2B14941D865095B6465937170014A3EDF1666A15625A2",
+  "type": "formations"
+ },
+ ".MAB2 - Médecin": {
+  "lien": "Telechargements/ical/Edt__MAB2___Medecin.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D597117B5773057DFFE71DA3E982E03906F729E9708327ACB342F45A6591DE6D7414533",
+  "type": "formations"
+ },
+ ".MAB2 - Politique éco. et soc., FS coll. terr.": {
+  "lien": "Telechargements/ical/Edt__MAB2___Politique_eco__et_soc___FS_coll__terr_.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B9297FB07443558D889F9D2CE1173A5C4301CEF5B450EEC57BF017F429045A9689F",
+  "type": "formations"
+ },
+ ".MAB2 - Politique éco. et soc., FS pol. éco. soc.": {
+  "lien": "Telechargements/ical/Edt__MAB2___Politique_eco__et_soc___FS_pol__eco__soc_.ics?version=2026.5.8&icalsecurise=AECDF1F28252AF5BBE2B9397D1FC15531A9ABDE4CCCD4D762E6DCA5EDD06CE850730C4B40170AAF5D8E1F75CDAD2897F",
+  "type": "formations"
+ },
+ ".MAB2 - Politique éco. et soc., FS socio-pol.": {
+  "lien": "Telechargements/ical/Edt__MAB2___Politique_eco__et_soc___FS_socio_pol_.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839CF825B102AE99710F73A6A219C99874DE85CD2F16D4C07FB88C182C624511DA82",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. biomédicales, FA": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__biomedicales__FA.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514454828D9A661498BCBEC3EAF2FF7DBF51DE8CD106291F1C240B806F47BFDD0B4",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. biomédicales, FS neuroscience": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__biomedicales__FS_neuroscience.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B9256A30A42D712C0237F2D1C267E2403CA225FA07CFE66DF9E97F27B5281AE2A19",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. chimiques, FA": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__chimiques__FA.ics?version=2026.5.8&icalsecurise=EC1EF59B50B544527EC69965AF587CDC9C7AD41F82669C6002983D76F8373E37F6CEDF1C8766810A09D48D6133F18264",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. chimiques, FD": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__chimiques__FD.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514879E05655B3380F6DAFBF21BBF8ADE9853304C7B71C47984FF056509D1D32EF1",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. chimiques, FS entreprise": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__chimiques__FS_entreprise.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E8D2C3D7A75150A2244FF2BA87795C7EA2ECFD5701CD2747826AEFD28ADE1172A",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. de gestion, FD": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__de_gestion__FD.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BCC0BE5344D7D916A54EDDF2E49FE35B5AB837EFF2BDDD29E8EB922A0B3E4C940D",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. de gestion, FS": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__de_gestion__FS.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F08A17A97C18D10ED9177EFEB742A7E605BACFC098FDB264CA11194C0625225BE48",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. de gestion, FS management (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__de_gestion__FS_management__Ch_.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BCAF06FAF29375535983E8546212D9C79D562900AF1F1F23B8863CC5485226337A",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. de l'éducation, FA": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__de_l_education__FA.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3EC66E0EACC996C33532BDB17ABF53BE12C8AE69FA1615B14B04DF83552CCBA2F2",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. de l'éducation, FS action sociale": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__de_l_education__FS_action_sociale.ics?version=2026.5.8&icalsecurise=391A5B9CF1635BEE97CFA92E72331F0881AC51A30CB413D2A633747C8B0545CA10F711D883A1F9F4F395A8EA36487EE4",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. de l'éducation, FS action sociale (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__de_l_education__FS_action_sociale__Ch_.ics?version=2026.5.8&icalsecurise=AECDF1F28252AF5BBE2B9397D1FC15530ADB70B99C69DF070629D302126FA8CD968F3F4D998DECA29E0DA010B834378E",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. de l'éducation, FS adapt. scolaire": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__de_l_education__FS_adapt__scolaire.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D5971175D689E0E5259A59E794C77F85F8058855915E6A802E0D809C5168F840F2A4DA3",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. de l'éducation, FS enseignement": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__de_l_education__FS_enseignement.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A514D6E185F940E27066526898D8B73A4F4037A34D0B4BD38823D6424CE2255FEC05",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. de l'éducation, FS enseignement (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__de_l_education__FS_enseignement__Ch_.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BCBB8435B7775A5B9F191B589F3BC11A7C698DA2010E96797E1CAF437EDE40351E",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. de l'éducation, FS technologie": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__de_l_education__FS_technologie.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3E60378C59A462545B70AE0F757F6488C9F7BF7395FBC5369651CA5CCF1FC55E15",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. de l'éducation, FS technologie (Ch)": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__de_l_education__FS_technologie__Ch_.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B9234F8E31D30D09138A9EC9EEE860FB6618163C01D5F7049D1341C7E405A8E88D8",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. infirmières": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__infirmieres.ics?version=2026.5.8&icalsecurise=B88C7B50EA9715CEDC5EF5B2EFF044BCE5C9757A8206F872277C3A77519A30FA5C6CD47D0009CE12E7FF3FE2AC72C9E4",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. informatiques, FA": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__informatiques__FA.ics?version=2026.5.8&icalsecurise=6390BF505DC22CB26AF52BF91D45A51497D809B41A2DCA3CAE9F5548560994F279411CC7510166B1129A8306607B6C13",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. informatiques, FS": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__informatiques__FS.ics?version=2026.5.8&icalsecurise=1D9489268EA9B742711036F54D597117457B35C3F1DC0C1BA71D451D8B1BEDA6F62052329DA32807360DE8E841CEAD90",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. informatiques, FS AIDA": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__informatiques__FS_AIDA.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E99B453AC93926D436D0CA10FAD8D692829D74A8FEAE23BB4802BEE66F027719FEE",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. mathématiques, FA": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__mathematiques__FA.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B92321FD16ACD4732D89C8CABFEBD702EA64FC56BAD725EBC177D08A4DA3A4299F6",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. mathématiques, FD": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__mathematiques__FD.ics?version=2026.5.8&icalsecurise=97DB402EC415E10AB287C5579D108E99C5051ED8573C638C72C3666AC7F04949BB22CD077B3B0A2C663EFC739746CC48",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. pharmaceutiques": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__pharmaceutiques.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3EEADD7598B9AF2755B5F8B970DE6AB674177E9D9DC7885706C4A9009F7D1F882D",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. physiques, FA": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__physiques__FA.ics?version=2026.5.8&icalsecurise=3F88D2A98E297D0A854402F6774F839CB5677310406626F062B78240897034DACE7A898D3108D6611570550A5D57B35F",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. physiques, FD": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__physiques__FD.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4F9E66D50F7E8B4E416A1E5DB6E164C964A8916E3B779A6E6F536645A23DC19AB",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. psychologiques, FA": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__psychologiques__FA.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034EBB2989A74FE24CAEA3354F1A3E44D6D83ACCDAEF2D812E6FC77BD1DC9EDF71A6",
+  "type": "formations"
+ },
+ ".MAB2 - Sc. psychologiques, FS": {
+  "lien": "Telechargements/ical/Edt__MAB2___Sc__psychologiques__FS.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA4B026B41C49AD782AA696CBF77C2A19B5D0DE943212C0F73C94351EEE07F00BCD",
+  "type": "formations"
+ },
+ ".MAB2 - Traduction, FD": {
+  "lien": "Telechargements/ical/Edt__MAB2___Traduction__FD.ics?version=2026.5.8&icalsecurise=9AABAC806913D2D1CC0A3BCEF50BB0165468443A51B31E63051E0DC98DC068F1A4F9D4D7C9FBCB1DA673B3B646D6F94C",
+  "type": "formations"
+ },
+ ".MAB2 - Traduction, FS trad. interculturel": {
+  "lien": "Telechargements/ical/Edt__MAB2___Traduction__FS_trad__interculturel.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E2E3C80D638C0C8A414B8A8DB990A151BD1E62AD9F2AAF2F6FFF6CAD0179608FB",
+  "type": "formations"
+ },
+ ".MAB2 - Traduction, FS trad. multidisciplinaire": {
+  "lien": "Telechargements/ical/Edt__MAB2___Traduction__FS_trad__multidisciplinaire.ics?version=2026.5.8&icalsecurise=FD28094FB61F1CB0C81DC2B906529CA45D713C7008A3DDDA5788A3EBCAA410B6864AC657A6F6E3EF6B382C09DE46F5CC",
+  "type": "formations"
+ },
+ ".MAB2 - Transitions et innovations soc.": {
+  "lien": "Telechargements/ical/Edt__MAB2___Transitions_et_innovations_soc_.ics?version=2026.5.8&icalsecurise=AECDF1F28252AF5BBE2B9397D1FC15531E5DF7AE785A2A1EDBB1A15840CC4ACF07B875D7D5F83191876F1B9CBE01E791",
+  "type": "formations"
+ },
+ ".MAB2 - Urba et dév territorial (CH)": {
+  "lien": "Telechargements/ical/Edt__MAB2___Urba_et_dev_territorial__CH_.ics?version=2026.5.8&icalsecurise=B6981757BC0C3574D799B1C76F9D8B3EADAAF06D461F5344CA8B8BA7D6AC76D3FD6E619DDAFE4455BEEA4F16D0CF8541",
+  "type": "formations"
+ },
+ ".MAB2 en orthopédagogie clinique": {
+  "lien": "Telechargements/ical/Edt__MAB2_en_orthopedagogie_clinique.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034E6F94DF720424677E4032427F09D0EF0CA37B805CA9CA5FFF71F56536E642CD32",
+  "type": "formations"
+ },
+ ".MAB3 - Médecin": {
+  "lien": "Telechargements/ical/Edt__MAB3___Medecin.ics?version=2026.5.8&icalsecurise=7E9AF82DAB8783BE3298B199B52A034EB376F0345A761722E18B285C03556AB0D83C056D4304F1A15B6AFD6773CADC4C",
+  "type": "formations"
+ },
+ ".MS - Etudes de genres": {
+  "lien": "Telechargements/ical/Edt__MS___Etudes_de_genres.ics?version=2026.5.8&icalsecurise=559E8BCDD98FE0A63A41A0A820A78B92C8F48F3B2AB1CE9F282A6176513483B4D66D39A33FA080A4C77F3EF0ECE3F842",
+  "type": "formations"
+ }
+}

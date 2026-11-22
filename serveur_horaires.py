@@ -8,16 +8,24 @@ Lance le serveur :
   l'export public « toutes salles », comme dans l'interface d'origine.
 - Archive locale persistante (HP_ARCHIVE) : les semaines publiées (fenêtre
   glissante ≈ 3 semaines) sont enregistrées à chaque consultation et via une
-  capture automatique périodique (CAPTURE_HEURES, défaut 6 h), ce qui permet
+  capture automatique périodique (CAPTURE_HEURES, défaut 2 h), ce qui permet
   de revoir les semaines passées même quand le serveur ne les publie plus.
-- Variables d'environnement : HP_HOST, HP_PORT, HP_URL, HP_ARCHIVE, CAPTURE_HEURES.
+- Catalogue de flux annuels (liens_annuels.json) : un lien par formation
+  publique de l'année 2026-2027 (récolté via l'interface UMONS). Le serveur
+  fusionne ces flux dans l'archive — toutes les semaines de l'année deviennent
+  consultables pour chaque formation, sans intervention. Désactivable avec
+  HP_ANNUEL_HEURES=0 ; en cas d'année suivante : relancer la récolte (voir README).
+- Variables d'environnement : HP_HOST, HP_PORT, HP_URL, HP_ARCHIVE,
+  CAPTURE_HEURES, HP_LIENS_ANNUELS, HP_ANNUEL_HEURES.
 
 Aucune dépendance externe : bibliothèque standard uniquement.
 """
 
 import argparse
+import html
 import json
 import os
+import re
 import sys
 import threading
 import time
@@ -35,10 +43,108 @@ FICHIER_ARCHIVE = Path(os.environ.get(
 ))
 INTERVALLE_CAPTURE = float(os.environ.get("CAPTURE_HEURES", "2")) * 3600
 INTERVALLE_REPRISE = 120  # nouvelle tentative rapide tant qu'aucune donnée live n'a été obtenue
+FICHIER_LIENS = Path(os.environ.get(
+    "HP_LIENS_ANNUELS",
+    str(Path(__file__).with_name("liens_annuels.json")),
+))
+INTERVALLE_ANNUEL = float(os.environ.get("HP_ANNUEL_HEURES", "24")) * 3600
+DELAIS_ANNUEL = 0.4      # pause entre deux flux annuels (politesse envers le serveur UMONS)
+DELAI_BOUCLE_ANNUEL = 30  # attendue avant la première passe annuelle au démarrage
 
 CACHE = {"url": None, "quand": 0.0, "evenements": [], "ressources": None}
 ARCHIVE = {}
 DUREE_CACHE = 300
+
+CATALOGUE_ANNUEL = {}          # libellé formation -> lien iCal annuel
+ANNUEL_MEMOIRE = {}            # libellé -> {quand, evenements} (cache TTL)
+VERROU_ANNUEL = threading.Lock()
+
+PREFIXE_COURS = re.compile(r"^Cours-(\d+)-(\d+)-")
+
+
+def charger_catalogue_annuel():
+    global CATALOGUE_ANNUEL
+    catalogue = {}
+    try:
+        brut = json.loads(FICHIER_LIENS.read_text(encoding="utf-8"))
+    except Exception as err:
+        print(f"Catalogue de flux annuels indisponible ({err}) : l'année ne sera couverte que par la capture glissante.", file=sys.stderr)
+        CATALOGUE_ANNUEL = {}
+        return catalogue
+    base = getattr(horaires, "BASE", "")
+    for libelle, v in brut.items():
+        lien = (v or {}).get("lien") or ""
+        if not lien:
+            continue
+        if lien.startswith("http"):
+            url = lien
+        else:
+            url = base + "/" + lien.lstrip("/")
+        catalogue[libelle] = url
+    CATALOGUE_ANNUEL = catalogue
+    if catalogue:
+        print(f"Catalogue de flux annuels chargé : {len(catalogue)} formations.")
+    return catalogue
+
+
+def cle_dedup(eve):
+    """Un même cours apparaît avec des UID différents selon l'export
+    (toutes salles vs flux par formation) mais partage le préfixe
+    Cours-<id>-<num>- . On dédoublonne sur (début, préfixe)."""
+    debut = eve["debut"].astimezone(horaires.TZ_LOCAL).isoformat()
+    m = PREFIXE_COURS.match(eve.get("uid") or "")
+    suffixe = m.group(0) if m else (eve.get("uid") or "")
+    return debut + "|" + suffixe
+
+
+def _a_ligne_type(description):
+    return bool(re.search(r"^type\s*:", description or "", re.IGNORECASE | re.MULTILINE))
+
+
+def fusionner_event(a, b):
+    """Fusionne deux variantes du même cours : garde la description la plus
+    riche (celle qui porte la ligne Type :) et complète formations/salles/groupes."""
+    if a is None:
+        return b
+    desc_a = a.get("description") or ""
+    desc_b = b.get("description") or ""
+    base, autre = (a, b)
+    if not _a_ligne_type(desc_a) and _a_ligne_type(desc_b):
+        base, autre = (b, a)
+    lignes = []
+    for ligne in (base.get("description") or "").split("\n"):
+        l = ligne.strip()
+        if l and l not in lignes:
+            lignes.append(l)
+    for ligne in (autre.get("description") or "").split("\n"):
+        l = ligne.strip()
+        if l and l not in lignes:
+            lignes.append(l)
+    base["description"] = "\n".join(lignes)
+    for cle in ("formations", "salles_liste", "groupes"):
+        for v in autre.get(cle) or []:
+            if v and v not in (base.get(cle) or []):
+                base.setdefault(cle, []).append(v)
+    if (autre.get("maj") or "") > (base.get("maj") or ""):
+        base["maj"] = autre["maj"]
+    return base
+
+
+def fusionner_sources(paires):
+    """Fusionne plusieurs listes d'événements en dédoublonnant les paires
+    équivalentes (même cours vu par plusieurs exports). paires = liste de
+    tuples (étiquette_source, événements), du moins prioritaire au plus prioritaire."""
+    par_cle = {}
+    for etiquette, evenements in paires:
+        for e in evenements:
+            try:
+                cle = cle_dedup(e)
+            except Exception:
+                continue
+            base = fusionner_event(par_cle.get(cle), e)
+            base["_source"] = etiquette
+            par_cle[cle] = base
+    return list(par_cle.values())
 
 
 def charger_archive():
@@ -92,6 +198,75 @@ def enregistrer_dans_archive(evenements):
             modifie = True
     if modifie or not FICHIER_ARCHIVE.exists():
         sauver_archive()
+
+
+def obtenir_annuel(ressource):
+    """Télécharge (avec cache TTL) le flux iCal annuel d'une formation et
+    l'enregistre dans l'archive. La formation est mentionnée dans les
+    descriptions (les flux par formation n'en portent pas)."""
+    if not ressource:
+        return []
+    with VERROU_ANNUEL:
+        maint = time.time()
+        entree = ANNUEL_MEMOIRE.get(ressource)
+        if entree and maint - entree["quand"] < INTERVALLE_ANNUEL:
+            return entree["evenements"]
+        lien = CATALOGUE_ANNUEL.get(ressource)
+        if lien is None and not ressource.startswith("."):
+            lien = CATALOGUE_ANNUEL.get("." + ressource.lstrip("."))
+        if not lien:
+            return entree["evenements"] if entree else []
+        try:
+            evenements = horaires.parser_ics(horaires.telecharger_ics(lien))
+        except Exception as err:
+            print(f"Flux annuel indisponible pour {ressource} ({err}).", file=sys.stderr)
+            if entree and maint - entree["quand"] < 7 * 86400:
+                return entree["evenements"]
+            return []
+        for e in evenements:
+            desc = e.get("description") or ""
+            if "formation" not in desc.lower():
+                e["description"] = (desc + f"\nFormations : {ressource}").strip()
+            e["description"] = html.unescape(e["description"])
+            e["formations"] = []
+            e["salles_liste"] = []
+            e["groupes"] = []
+            infos = analyser(e)
+            e.update({"code": infos["code"], "intitule": infos["intitule"],
+                      "enseignants": infos["enseignants"], "type": infos["type"]})
+            for ligne in (e.get("description") or "").split("\n"):
+                ligne = ligne.strip()
+                if ":" not in ligne:
+                    continue
+                cle, _, valeur = ligne.partition(":")
+                cle = cle.strip().lower()
+                valeurs = [html.unescape(v.strip()) for v in valeur.split(",") if v.strip()]
+                if cle in ("formation", "formations"):
+                    e["formations"] += valeurs
+                elif cle in ("salle", "salles"):
+                    e["salles_liste"] += valeurs
+                elif cle in ("groupe", "groupes"):
+                    e["groupes"] += valeurs
+        enregistrer_dans_archive(evenements)
+        ANNUEL_MEMOIRE[ressource] = {"quand": maint, "evenements": evenements}
+        return evenements
+
+
+def boucle_annuel():
+    """En arrière-plan : télécharge les flux annuels de toutes les formations
+    du catalogue et les fusionne dans l'archive (cycle HP_ANNUEL_HEURES)."""
+    def tour():
+        time.sleep(DELAI_BOUCLE_ANNUEL)
+        while True:
+            for ressource in list(CATALOGUE_ANNUEL):
+                try:
+                    obtenir_annuel(ressource)
+                except Exception:
+                    traceback.print_exc(file=sys.stderr)
+                time.sleep(DELAIS_ANNUEL)
+            time.sleep(max(INTERVALLE_ANNUEL, 3600))
+    fil = threading.Thread(target=tour, daemon=True, name="annuel")
+    fil.start()
 
 
 def evenements_archive():
@@ -180,6 +355,7 @@ def obtenir_donnees(url_ics: str, autoriser_cache=True):
 
 
 def boucle_capture(url_ics):
+    """Ne démarre plus la boucle annuelle ici : voir main()."""
     def tour():
         while True:
             time.sleep(INTERVALLE_REPRISE if not CACHE["evenements"] else INTERVALLE_CAPTURE)
@@ -285,19 +461,31 @@ class Controleur(BaseHTTPRequestHandler):
                 type_ressource = (params.get("type", [""])[0] or "").strip().lower()
                 ressource = (params.get("ressource", [""])[0] or "").strip()
                 groupes = {}
+                sources_cat = list(CACHE["evenements"]) + evenements_archive()
                 if type_ressource == "formation" and ressource:
-                    for e in list(CACHE["evenements"]) + evenements_archive():
-                        if ressource in (e.get("formations") or []):
-                            for g in e.get("groupes") or []:
-                                if g:
-                                    groupes.setdefault(g, g)
-                    # dédoublonnage approx : la même formation peut avoir les mêmes
-                    # groupes exprimés avec virgules répétées
-                else:
-                    for e in list(CACHE["evenements"]) + evenements_archive():
+                    try:
+                        sources_cat = sources_cat + obtenir_annuel(ressource)
+                    except Exception:
+                        traceback.print_exc(file=sys.stderr)
+                for e in sources_cat:
+                    if type_ressource == "formation" and ressource:
+                        if ressource not in (e.get("formations") or []):
+                            continue
                         for g in e.get("groupes") or []:
                             if g:
                                 groupes.setdefault(g, g)
+                    else:
+                        for g in e.get("groupes") or []:
+                            if g:
+                                groupes.setdefault(g, g)
+                # dédoublonnage approx : la même formation peut avoir les mêmes
+                # groupes exprimés avec virgules répétées
+                if CATALOGUE_ANNUEL:
+                    formations_aff = dict(ressources["formations"])
+                    for libelle in CATALOGUE_ANNUEL:
+                        formations_aff.setdefault(libelle, libelle.lstrip("."))
+                    ressources = {"formations": dict(sorted(formations_aff.items(), key=lambda kv: kv[0].lower())),
+                                  "salles": ressources["salles"]}
                 self._envoyer(200, json.dumps({
                     "formations": [{"valeur": v, "affichage": a} for v, a in ressources["formations"].items()],
                     "salles": [{"valeur": s, "affichage": a} for s, a in ressources["salles"].items()],
@@ -313,12 +501,20 @@ class Controleur(BaseHTTPRequestHandler):
                     evenements_bruts = []
                     source = "archive"
 
-                fusion = {}
-                for e in evenements_archive():
-                    fusion[e.get("uid")] = e
-                for e in evenements_bruts:
-                    fusion[e.get("uid")] = e
-                evenements = list(fusion.values())
+                type_ressource = (params.get("type", [""])[0] or "").strip().lower()
+                ressource = (params.get("ressource", [""])[0] or "").strip()
+
+                evenements_annuels = []
+                if CATALOGUE_ANNUEL and type_ressource == "formation" and ressource:
+                    try:
+                        evenements_annuels = obtenir_annuel(ressource)
+                    except Exception:
+                        traceback.print_exc(file=sys.stderr)
+
+                evenements = fusionner_sources([
+                    ("archive", evenements_archive()), ("live", evenements_bruts),
+                    ("annuel", evenements_annuels),
+                ])
 
                 lundi = None
                 brut = params.get("semaine", [""])[0]
@@ -333,8 +529,6 @@ class Controleur(BaseHTTPRequestHandler):
                 dimanche = lundi + timedelta(days=7)
 
                 filtre = (params.get("filtre", [""])[0] or "").strip().lower()
-                type_ressource = (params.get("type", [""])[0] or "").strip().lower()
-                ressource = (params.get("ressource", [""])[0] or "").strip()
                 groupe = (params.get("groupe", [""])[0] or "").strip()
 
                 selection = []
@@ -372,12 +566,21 @@ class Controleur(BaseHTTPRequestHandler):
                     fin_semaine = (dimanche - timedelta(days=1)).date()
                     hors_fenetre = (fin_semaine < datetime.fromisoformat(fenetre["debut"]).date()
                                     or debut_semaine > datetime.fromisoformat(fenetre["fin"]).date())
-                    source = "archive" if hors_fenetre else "live"
-                    if hors_fenetre and not selection:
-                        source = "vide"
                 else:
                     fenetre = None
-                    source = "archive" if selection else "vide"
+                    hors_fenetre = True
+                if not selection:
+                    source = "vide"
+                else:
+                    sources_selection = {e.get("_source") for e in selection}
+                    if "live" in sources_selection and not hors_fenetre:
+                        source = "live"
+                    elif "annuel" in sources_selection:
+                        source = "annuel"
+                    elif "live" in sources_selection:
+                        source = "live"
+                    else:
+                        source = "archive"
 
                 self._envoyer(200, json.dumps({
                     "semaine": lundi.strftime("%Y-%m-%d"),
@@ -408,6 +611,9 @@ def main(argv=None):
 
     determiner_version()
     charger_archive()
+    charger_catalogue_annuel()
+    if INTERVALLE_ANNUEL > 0 and CATALOGUE_ANNUEL:
+        boucle_annuel()
     try:
         evenements, ressources = obtenir_donnees(args.url, autoriser_cache=False)
         dates = [e["debut"].astimezone(horaires.TZ_LOCAL).date() for e in evenements] if evenements else []

@@ -24,6 +24,9 @@ services:
       HP_ARCHIVE: "/app/data/archive_horaires.json"
       # capture de l'horaire toutes les 2 heures pour n'oublier aucune semaine
       CAPTURE_HEURES: "2"
+      # flux iCal annuels (toute l'année) tirés du catalogue intégré liens_annuels.json :
+      # rafraîchissement des 234 formations publiques toutes les 24 h (0 = désactiver)
+      HP_ANNUEL_HEURES: "24"
       # Facultatif : URL iCal d'une ressource precise (diplome, promo, salle, enseignant)
       # HP_URL: "https://hplanning2026.umons.ac.be/ical/xxxx.ics?idICal=...&param=..."
 volumes:
