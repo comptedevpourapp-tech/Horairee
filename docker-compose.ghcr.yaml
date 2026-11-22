@@ -8,6 +8,9 @@ name: horaire-umons
 services:
   horaire-umons:
     image: ghcr.io/comptedevpourapp-tech/horairee:latest
+    # force le telechargement de la derniere image a chaque recreation du conteneur
+    # (sinon TrueNAS/Docker reutilise l image locale en cache et l update ne change rien)
+    pull_policy: always
     container_name: horaire-umons
     restart: unless-stopped
     ports:
