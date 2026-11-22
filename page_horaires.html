@@ -12,6 +12,7 @@
   select, input[type=text] { padding: 7px 9px; border: none; border-radius: 4px; min-width: 120px; font-size: 13px; }
   #recherche { flex: 0 1 150px; }
   #ressource { flex: 1 1 220px; max-width: 400px; }
+  #groupe { flex: 0 1 220px; }
   #groupeRecherche { flex: 0 1 180px; }
   #groupe { flex: 1 1 170px; max-width: 300px; }
   #filtre { width: 150px; }
@@ -89,6 +90,7 @@
   </div>
   <div class="controles">
     <label style="font-size:12px;">Groupe (TP) :</label>
+    <select id="groupe" title="Filtrer par groupe de TP"><option value="">Tous les groupes</option></select>
     <input type="text" id="groupeRecherche" placeholder="rechercher votre groupe…">
     <label style="font-size:12px;">Filtre :</label>
     <input type="text" id="filtre" placeholder="ex. Math">
