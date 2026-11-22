@@ -163,6 +163,9 @@ function chargerRessources() {
     if (s.nombre > 0) {
       const fmt = (iso) => new Date(iso + "T00:00:00").toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit", year:"numeric"});
       p.textContent = "📂 " + s.nombre + " semaine(s) disponible(s), du " + fmt(s.premiere) + " au " + fmt(s.derniere) + " (les semaines antérieures à l'installation n'ont jamais été publiées par UMONS et ne peuvent pas être récupérées).";
+      if (s.annuel_pret === false) {
+        p.textContent += " ⏳ Passe annuelle en cours : les semaines à venir se remplissent progressivement (comptez quelques minutes après le démarrage du serveur).";
+      }
     } else {
       p.textContent = "📂 Aucune semaine archivée pour l'instant.";
     }
@@ -371,7 +374,10 @@ function afficher(data) {
 
   const badge = document.getElementById("badgeSource");
   const horsFenetre = data.fenetre && (ref < new Date(data.fenetre.debut + "T00:00:00") || ref > new Date(data.fenetre.fin + "T23:59:59"));
-  if (horsFenetre && data.source === "archive") {
+  if (horsFenetre && data.source === "annuel") {
+    badge.style.display = "";
+    badge.textContent = "📅 année complète (flux annuel)";
+  } else if (horsFenetre && data.source === "archive") {
     badge.style.display = "";
     badge.textContent = "📁 semaine archivée";
   } else if (horsFenetre && total === 0) {
@@ -382,7 +388,7 @@ function afficher(data) {
   }
   document.getElementById("message").textContent = total === 0
     ? (horsFenetre
-        ? "Aucune donnée enregistrée pour cette semaine (elle n'a jamais été capturée ; le serveur UMONS ne publie que ~3 semaines glissantes)."
+        ? "Aucune donnée enregistrée pour cette semaine (elle n'a jamais été publiée ni capturée ; le serveur UMONS ne publie que ~3 semaines glissantes — la passe annuelle du serveur la récupérera automatiquement)."
         : "Aucun cours cette semaine pour cette sélection.")
     : "";
 }

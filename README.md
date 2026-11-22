@@ -68,11 +68,26 @@ cette limite ont été contournés :
    annuel n'apparaît qu'une fois, avec la description la plus riche (code,
    type) et les formations des deux sources.
 3. **À la demande** : sélectionner une formation hors fenêtre télécharge
-   immédiatement son flux annuel (source « annuel », badge dans la page).
+   immédiatement son flux annuel (badge « 📅 année complète » dans la page).
 
 Résultat : toute semaine de l'année 2026-2027 est consultable pour les
 formations du catalogue — la navigation est indépendante de la fenêtre
 glissante, de septembre 2026 à juillet 2027.
+
+### Après un redémarrage du conteneur
+
+La passe annuelle de fond démarre ~30 s après le lancement et met environ
+2 à 4 minutes à intégrer les 234 flux (progression affichée dans les
+ journaux du conteneur : « Passe annuelle : 25/234… »). Pendant ce temps,
+le bandeau 📂 de la page signale « Passe annuelle en cours » ; les semaines
+lointaines se remplissent au fur et à mesure, puis l'indicateur passe à
+`annuel_pret: true` (`/api/semaines`). Les horaires d'une formation
+sélectionnée restent disponibles immédiatement pendant la passe.
+
+Note technique : les accès à l'archive sont protégés par un verrou
+(`VERROU_ARCHIVE`) — le fil annuel, la capture périodique « toutes salles »
+et les requêtes web peuvent désormais travailler en même temps sans
+corrompre l'archive ni faire tomber une requête en erreur 500.
 
 ### Variables d'environnement
 

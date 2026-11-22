@@ -59,6 +59,12 @@ CATALOGUE_ANNUEL = {}          # libellé formation -> lien iCal annuel
 ANNUEL_MEMOIRE = {}            # libellé -> {quand, evenements} (cache TTL)
 VERROU_ANNUEL = threading.Lock()
 
+# Protège ARCHIVE contre les accès concurrents (fil annuel de fond, capture
+# périodique, requêtes web) — sans lui, l'itération lève
+# « RuntimeError: dictionary changed size during iteration » (HTTP 500).
+VERROU_ARCHIVE = threading.RLock()
+ANNUEL_PRET = False            # True après la première passe annuelle complète
+
 PREFIXE_COURS = re.compile(r"^Cours-(\d+)-(\d+)-")
 
 
@@ -149,21 +155,23 @@ def fusionner_sources(paires):
 
 def charger_archive():
     global ARCHIVE
-    if FICHIER_ARCHIVE.exists():
-        try:
-            ARCHIVE = json.loads(FICHIER_ARCHIVE.read_text(encoding="utf-8"))
-        except Exception as err:
-            print(f"Archive illisible ({err}), démarrage à vide.", file=sys.stderr)
-            ARCHIVE = {}
+    with VERROU_ARCHIVE:
+        if FICHIER_ARCHIVE.exists():
+            try:
+                ARCHIVE = json.loads(FICHIER_ARCHIVE.read_text(encoding="utf-8"))
+            except Exception as err:
+                print(f"Archive illisible ({err}), démarrage à vide.", file=sys.stderr)
+                ARCHIVE = {}
 
 
 def sauver_archive():
-    try:
-        temporaire = FICHIER_ARCHIVE.with_suffix(".tmp")
-        temporaire.write_text(json.dumps(ARCHIVE, ensure_ascii=False), encoding="utf-8")
-        temporaire.replace(FICHIER_ARCHIVE)
-    except Exception as err:
-        print(f"Impossible d'écrire l'archive {FICHIER_ARCHIVE} : {err}", file=sys.stderr)
+    with VERROU_ARCHIVE:
+        try:
+            temporaire = FICHIER_ARCHIVE.with_suffix(".tmp")
+            temporaire.write_text(json.dumps(ARCHIVE, ensure_ascii=False), encoding="utf-8")
+            temporaire.replace(FICHIER_ARCHIVE)
+        except Exception as err:
+            print(f"Impossible d'écrire l'archive {FICHIER_ARCHIVE} : {err}", file=sys.stderr)
 
 
 def analyser(eve):
@@ -172,32 +180,33 @@ def analyser(eve):
 
 def enregistrer_dans_archive(evenements):
     modifie = False
-    for e in evenements:
-        uid = e.get("uid") or (
-            e["debut"].astimezone(horaires.TZ_LOCAL).isoformat() + "|" + e.get("matiere", "")
-        )
-        infos = analyser(e)
-        rec = {
-            "debut": e["debut"].astimezone(horaires.TZ_LOCAL).isoformat(),
-            "fin": e["fin"].astimezone(horaires.TZ_LOCAL).isoformat(),
-            "matiere": e.get("matiere", ""),
-            "salle": e.get("salle", ""),
-            "description": e.get("description", ""),
-            "uid": uid,
-            "maj": e.get("maj", ""),
-            "vu": datetime.now(horaires.TZ_LOCAL).isoformat(timespec="seconds"),
-            "code": infos["code"],
-            "intitule": infos["intitule"],
-            "enseignants": infos["enseignants"],
-            "type_ac": infos["type"],
-        }
-        actuel = ARCHIVE.get(uid)
-        if actuel is None or actuel.get("maj") != rec["maj"]:
-            rec["vu"] = actuel.get("vu", rec["vu"]) if actuel else rec["vu"]
-            ARCHIVE[uid] = rec
-            modifie = True
-    if modifie or not FICHIER_ARCHIVE.exists():
-        sauver_archive()
+    with VERROU_ARCHIVE:
+        for e in evenements:
+            uid = e.get("uid") or (
+                e["debut"].astimezone(horaires.TZ_LOCAL).isoformat() + "|" + e.get("matiere", "")
+            )
+            infos = analyser(e)
+            rec = {
+                "debut": e["debut"].astimezone(horaires.TZ_LOCAL).isoformat(),
+                "fin": e["fin"].astimezone(horaires.TZ_LOCAL).isoformat(),
+                "matiere": e.get("matiere", ""),
+                "salle": e.get("salle", ""),
+                "description": e.get("description", ""),
+                "uid": uid,
+                "maj": e.get("maj", ""),
+                "vu": datetime.now(horaires.TZ_LOCAL).isoformat(timespec="seconds"),
+                "code": infos["code"],
+                "intitule": infos["intitule"],
+                "enseignants": infos["enseignants"],
+                "type_ac": infos["type"],
+            }
+            actuel = ARCHIVE.get(uid)
+            if actuel is None or actuel.get("maj") != rec["maj"]:
+                rec["vu"] = actuel.get("vu", rec["vu"]) if actuel else rec["vu"]
+                ARCHIVE[uid] = rec
+                modifie = True
+        if modifie or not FICHIER_ARCHIVE.exists():
+            sauver_archive()
 
 
 def obtenir_annuel(ressource):
@@ -216,10 +225,18 @@ def obtenir_annuel(ressource):
             lien = CATALOGUE_ANNUEL.get("." + ressource.lstrip("."))
         if not lien:
             return entree["evenements"] if entree else []
-        try:
-            evenements = horaires.parser_ics(horaires.telecharger_ics(lien))
-        except Exception as err:
-            print(f"Flux annuel indisponible pour {ressource} ({err}).", file=sys.stderr)
+        evenements = None
+        derniere_erreur = None
+        for essai in range(2):              # reprise : 1 timeout ne saute pas la formation
+            try:
+                evenements = horaires.parser_ics(horaires.telecharger_ics(lien))
+                break
+            except Exception as err:
+                derniere_erreur = err
+                if essai == 0:
+                    time.sleep(3)
+        if evenements is None:
+            print(f"Flux annuel indisponible pour {ressource} ({derniere_erreur}).", file=sys.stderr)
             if entree and maint - entree["quand"] < 7 * 86400:
                 return entree["evenements"]
             return []
@@ -256,14 +273,26 @@ def boucle_annuel():
     """En arrière-plan : télécharge les flux annuels de toutes les formations
     du catalogue et les fusionne dans l'archive (cycle HP_ANNUEL_HEURES)."""
     def tour():
+        global ANNUEL_PRET
         time.sleep(DELAI_BOUCLE_ANNUEL)
         while True:
-            for ressource in list(CATALOGUE_ANNUEL):
+            debut_passe = time.time()
+            total = len(CATALOGUE_ANNUEL)
+            reussis = 0
+            for indice, ressource in enumerate(list(CATALOGUE_ANNUEL), 1):
                 try:
                     obtenir_annuel(ressource)
+                    reussis += 1
                 except Exception:
                     traceback.print_exc(file=sys.stderr)
+                if indice % 25 == 0:
+                    print(f"Passe annuelle : {indice}/{total} formations traitées "
+                          f"(en cours {time.time() - debut_passe:.0f} s)…", file=sys.stderr)
                 time.sleep(DELAIS_ANNUEL)
+            ANNUEL_PRET = True
+            print(f"Passe annuelle terminée : {reussis}/{total} flux intégrés en "
+                  f"{time.time() - debut_passe:.0f} s. Archive : {len(ARCHIVE)} cours.",
+                  file=sys.stderr)
             time.sleep(max(INTERVALLE_ANNUEL, 3600))
     fil = threading.Thread(target=tour, daemon=True, name="annuel")
     fil.start()
@@ -271,7 +300,12 @@ def boucle_annuel():
 
 def evenements_archive():
     evenements = []
-    for rec in ARCHIVE.values():
+    with VERROU_ARCHIVE:
+        # copie instantanée : l'itération directe sur ARCHIVE.values() peut
+        # lever « dictionary changed size during iteration » si le fil annuel
+        # écrit en même temps (source du HTTP 500 observé)
+        instantane = list(ARCHIVE.values())
+    for rec in instantane:
         try:
             evenements.append({
                 "debut": datetime.fromisoformat(rec["debut"]),
@@ -449,6 +483,7 @@ class Controleur(BaseHTTPRequestHandler):
                     "nombre": len(lunes),
                     "premiere": lunes[0] if lunes else "",
                     "derniere": lunes[-1] if lunes else "",
+                    "annuel_pret": ANNUEL_PRET,
                 }, ensure_ascii=False), "application/json")
             elif analyse.path == "/api/ressources":
                 url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
