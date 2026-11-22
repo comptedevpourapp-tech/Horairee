@@ -34,6 +34,7 @@ FICHIER_ARCHIVE = Path(os.environ.get(
     str(Path(__file__).with_name("archive_horaires.json")),
 ))
 INTERVALLE_CAPTURE = float(os.environ.get("CAPTURE_HEURES", "6")) * 3600
+INTERVALLE_REPRISE = 120  # nouvelle tentative rapide tant qu'aucune donnée live n'a été obtenue
 
 CACHE = {"url": None, "quand": 0.0, "evenements": [], "ressources": None}
 ARCHIVE = {}
@@ -181,7 +182,7 @@ def obtenir_donnees(url_ics: str, autoriser_cache=True):
 def boucle_capture(url_ics):
     def tour():
         while True:
-            time.sleep(INTERVALLE_CAPTURE)
+            time.sleep(INTERVALLE_REPRISE if not CACHE["evenements"] else INTERVALLE_CAPTURE)
             try:
                 obtenir_donnees(url_ics, autoriser_cache=False)
             except Exception:

@@ -63,12 +63,12 @@ global.document = {
 (async () => {
   const port = process.argv[2] || "8725";
   const js = page.match(/<script>([\s\S]*)<\/script>/)[1];
+  let it = null;
   try {
-    // exécution asynchrone : on attend le cycle de promesses
     const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
-    const fn = new AsyncFunction("fetch", "URL", "location", "window", js);
+    const fn = new AsyncFunction("fetch", "URL", "location", "window", js + "\n;return { charger: typeof charger !== 'undefined' ? charger : null }");
     const fetchLocal = (u) => fetch(u);
-    await fn(fetchLocal, URL, { toString: () => "http://127.0.0.1:" + port + "/" }, {});
+    it = await fn(fetchLocal, URL, { toString: () => "http://127.0.0.1:" + port + "/" }, {});
     await new Promise(r => setTimeout(r, 4000));
   } catch (e) {
     console.log("ERREUR RUNTIME PAGE:", e && e.stack || e);
@@ -81,4 +81,13 @@ global.document = {
   console.log("== groupe options:", elements["groupe"].options.length);
   console.log("== blocs cours ajoutés:", gridCols.reduce((n, c) => n + c.options.filter(o => o.className === "cours").length, 0));
   console.log("== items légende:", elements["legende"].options.filter(c => c.className === "legende-item").length);
+  if (it && it.charger) {
+    it.majListeRessources && it.majListeRessources();
+    const bab2 = elements["ressource"].options.find(o => o.value === ".BAB2 - Ir. civil");
+    console.log("== .BAB2 - Ir. civil present dans la liste:", Boolean(bab2));
+    elements["ressource"].value = ".BAB2 - Ir. civil";
+    it.charger();
+    await new Promise(r => setTimeout(r, 2500));
+    console.log("== après sélection : blocs =", gridCols.reduce((n, c) => n + c.options.filter(o => o.className === "cours").length, 0), "| message:", JSON.stringify(elements["message"].textContent));
+  }
 })();
