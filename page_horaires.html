@@ -95,6 +95,12 @@
     <label style="font-size:12px;">Filtre :</label>
     <input type="text" id="filtre" placeholder="ex. Math">
   </div>
+  <div class="controles">
+    <label style="font-size:12px;" title="Dans l'interface UMONS : ouvre ta ressource, clique le bouton iCal et copie le lien permanent — il couvre toute l'année. La liste des formations ci-dessus reste celle du flux public.">📅 Flux iCal annuel :</label>
+    <input type="text" id="flux" placeholder="lien permanent iCal de ta ressource (bouton iCal de l'interface UMONS) — affiche toute l'année" style="flex:1 1 380px">
+    <button id="fluxOk">Utiliser</button>
+    <button id="fluxRaz" title="Revenir au flux public (fenêtre ~3 semaines)">Retirer</button>
+  </div>
 </header>
 <main>
   <div id="legende"></div>
@@ -211,10 +217,23 @@ function majListeGroupes() {
   if ([...sel.options].some(o => o.value === conserve)) sel.value = conserve;
 }
 
+function lireFlux() {
+  try { return (window.localStorage && window.localStorage.getItem("lical")) || ""; }
+  catch (e) { return ""; }
+}
+function ecrireFlux(v) {
+  try {
+    if (v) window.localStorage.setItem("lical", v);
+    else window.localStorage.removeItem("lical");
+  } catch (e) {}
+}
+
 function charger() {
   const u = new URL("/api/horaires", location);
   const filtre = document.getElementById("filtre").value.trim();
   if (filtre) u.searchParams.set("filtre", filtre);
+  const flux = lireFlux();
+  if (flux) u.searchParams.set("url", flux);
   const type = document.getElementById("categorie").value;
   const ressource = document.getElementById("ressource").value;
   const groupe = document.getElementById("groupe").value;
@@ -424,6 +443,20 @@ document.getElementById("reset").onclick = () => {
   charger();
 };
 document.getElementById("filtre").addEventListener("keydown", e => { if (e.key === "Enter") charger(); });
+
+document.getElementById("fluxOk").onclick = () => {
+  const v = document.getElementById("flux").value.trim();
+  if (!v) { document.getElementById("message").textContent = "Colle d'abord le lien permanent iCal copié depuis l'interface UMONS."; return; }
+  ecrireFlux(v);
+  charger();
+};
+document.getElementById("fluxRaz").onclick = () => {
+  ecrireFlux("");
+  document.getElementById("flux").value = "";
+  charger();
+};
+
+document.getElementById("flux").value = lireFlux();
 
 chargerRessources();
 charger();

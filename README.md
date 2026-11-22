@@ -46,3 +46,20 @@ disponible — un badge l'indique dans la page.
 
 Notes :
 - Pour l'emploi du temps d'une promo précise : dans l'interface `invite?fd=1`, ouvrez la ressource, cliquez le bouton iCal et copiez le lien permanent dans `HP_URL` ou le champ de la page.
+
+## Toute l'année (flux iCal annuel)
+
+L'export public « toutes salles » est limité par UMONS à la fenêtre publiée
+(~3 semaines glissantes) : aucun paramètre ne l'étend. En revanche, chaque
+ressource dispose dans l'interface officielle d'un **lien permanent iCal
+annuel** (tout est prévu côté client avec `d=[1..62]`) :
+
+1. Dans `https://hplanning2026.umons.ac.be/invite?fd=1`, ouvre ta ressource
+   (formation, salle, …).
+2. Clique le bouton **iCal** et copie le **lien permanent** (image/QR).
+3. Colle-le dans la page web de l'app, champ **« Flux iCal annuel »** → **Utiliser**.
+
+L'app télécharge alors l'horaire de l'année entière pour cette ressource, en
+continrant à fusionner avec l'archive locale. Le choix est mémorisé dans le
+navigateur (localStorage, clé `lical`) ; **Retirer** revient au flux public.
+Côté serveur, la variable `HP_URL` accepte aussi ce lien (historique).
