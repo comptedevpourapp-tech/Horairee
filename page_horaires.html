@@ -67,6 +67,15 @@
   #fiche dd { margin: 2px 0 0; font-size: 14px; }
   #fiche .fermer { position: absolute; top: 8px; right: 8px; background: #eee; color: #333; width: 30px; height: 30px;
                    border-radius: 50%; font-size: 15px; padding: 0; }
+  #accueil { position: fixed; z-index: 62; top: 50%; left: 50%; transform: translate(-50%, -50%);
+             background: #fff; border-radius: 10px; max-width: 460px; width: calc(100% - 30px);
+             padding: 20px 24px; display: none; box-shadow: 0 10px 40px #0006; }
+  #accueil h2 { margin: 0 0 6px; font-size: 18px; }
+  #accueil label { display: block; font-size: 12px; color: #666; margin: 12px 0 4px; text-transform: uppercase; }
+  #accueil select { width: 100%; padding: 7px; border: 1px solid #ccd; border-radius: 6px; font-size: 14px; background: #fff; }
+  #accueil .boutons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+  #accueil button { padding: 8px 14px; border: none; border-radius: 6px; background: #2f6fd6; color: #fff; font-size: 14px; cursor: pointer; }
+  #accueil button.second { background: #e3e7ef; color: #333; }
   .pastilleType { display: inline-block; font-size: 11px; border-radius: 10px; padding: 2px 10px; color: #fff; }
   @media (max-width: 760px) {
     .cours { font-size: 9px; padding: 2px 3px; }
@@ -118,6 +127,7 @@
 </main>
 <div id="voile"></div>
 <div id="fiche"></div>
+<div id="accueil"></div>
 <script>
 "use strict";
 const HEURE_DEBUT = 7, HEURE_FIN = 20, PX_PAR_HEURE = 60;
@@ -461,7 +471,7 @@ function fermerFiche() {
   document.getElementById("voile").style.display = "none";
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape") fermerFiche(); });
-document.getElementById("voile").onclick = fermerFiche;
+document.getElementById("voile").onclick = () => { document.getElementById("accueil").style.display = "none"; fermerFiche(); };
 
 document.getElementById("categorie").onchange = () => {
   const type = document.getElementById("categorie").value;
@@ -508,8 +518,111 @@ document.getElementById("fluxRaz").onclick = () => {
 
 document.getElementById("flux").value = lireFlux();
 
-chargerRessources();
-charger();
+// ---------- Préférences utilisateur (cookies) : formation + groupe ----------
+const JOURS_COOKIE = 365;
+function ecrireCookie(nom, valeur) {
+  try {
+    document.cookie = nom + "=" + encodeURIComponent(valeur) + "; path=/; max-age="
+      + (JOURS_COOKIE * 86400) + "; SameSite=Lax";
+  } catch (e) {}
+}
+function lireCookie(nom) {
+  try {
+    const m = document.cookie.match(new RegExp("(?:^|; )" + nom + "=([^;]*)"));
+    return m ? decodeURIComponent(m[1]) : "";
+  } catch (e) { return ""; }
+}
+function lirePreference() {
+  const res = lireCookie("hp_ressource");
+  if (!res) return null;
+  return { categorie: lireCookie("hp_categorie") || "formations",
+           ressource: res, groupe: lireCookie("hp_groupe") };
+}
+
+async function appliquerPreference(pref) {
+  // met les sélecteurs de la page sur la préférence mémorisée ; renvoie false
+  // si la ressource n'existe plus (formation retirée du catalogue)
+  const cath = pref.categorie === "salles" ? "salles" : "formations";
+  document.getElementById("categorie").value = cath;
+  document.getElementById("recherche").style.display = cath ? "" : "none";
+  majListeRessources();
+  const sel = document.getElementById("ressource");
+  if (![...sel.options].some(o => o.value === pref.ressource)) {
+    ecrireCookie("hp_ressource", "");
+    ecrireCookie("hp_groupe", "");
+    return false;
+  }
+  sel.value = pref.ressource;
+  document.getElementById("flux").value = lireFlux();
+  await majGroupesPourRessource();
+  if (pref.groupe) {
+    const g = document.getElementById("groupe");
+    if ([...g.options].some(o => o.value === pref.groupe)) g.value = pref.groupe;
+    else ecrireCookie("hp_groupe", "");
+  }
+  return true;
+}
+
+async function ouvrirAccueil(pref) {
+  // premier écran : choix formation + groupe, mémorisé dans les cookies
+  const box = document.getElementById("accueil");
+  const voile = document.getElementById("voile");
+  box.innerHTML =
+    "<h2>Bienvenue sur votre emploi du temps UMONS</h2>" +
+    "<p style='font-size:13px;color:#555;margin:4px 0 2px'>Choisissez votre formation (et au besoin votre groupe de TP) ; l'information est mémorisée dans les cookies et reste sélectionnée à chaque visite.</p>" +
+    "<label>Formation</label><select id='accFormation'></select>" +
+    "<label>Groupe (TP)</label><select id='accGroupe'><option value=''>Tous les groupes</option></select>" +
+    "<div class='boutons'><button id='accPasser' class='second'>Passer</button><button id='accOk'>Enregistrer et afficher</button></div>";
+  const selF = box.querySelector("#accFormation");
+  for (const f of (catalogue.formations || [])) {
+    const o = document.createElement("option"); o.value = f.valeur; o.textContent = f.affichage; selF.appendChild(o);
+  }
+  if (pref && pref.ressource && [...selF.options].some(o => o.value === pref.ressource)) selF.value = pref.ressource;
+  const selG = box.querySelector("#accGroupe");
+  const majGroupesAccueil = async () => {
+    selG.innerHTML = "<option value=''>Tous les groupes</option>";
+    if (!selF.value) return;
+    try {
+      const r = await fetch(new URL("/api/ressources?type=formation&ressource=" + encodeURIComponent(selF.value), location));
+      const data = await r.json();
+      for (const g of (data.groupes || [])) {
+        const o = document.createElement("option"); o.value = g.valeur; o.textContent = g.affichage; selG.appendChild(o);
+      }
+      if (pref && pref.groupe && [...selG.options].some(o => o.value === pref.groupe)) selG.value = pref.groupe;
+    } catch (e) { /* repli : tous les groupes */ }
+  };
+  await majGroupesAccueil();
+  selF.onchange = async () => { if (pref) pref.groupe = ""; await majGroupesAccueil(); };
+  box.style.display = "block";
+  voile.style.display = "block";
+  box.querySelector("#accOk").onclick = () => {
+    ecrireCookie("hp_categorie", "formations");
+    ecrireCookie("hp_ressource", selF.value);
+    ecrireCookie("hp_groupe", selG.value);
+    box.style.display = "none";
+    voile.style.display = "none";
+    appliquerPreference({ categorie: "formations", ressource: selF.value, groupe: selG.value }).then(() => charger());
+  };
+  box.querySelector("#accPasser").onclick = () => { box.style.display = "none"; voile.style.display = "none"; };
+}
+
+(async () => {
+  chargerRessources();
+  // le catalogue (formations/salles/groupes) arrive via /api/ressources :
+  // attendre son arrivée avant d'appliquer la préférence ou d'ouvrir l'accueil
+  const t0c = Date.now();
+  while (!(catalogue.formations || []).length && Date.now() - t0c < 30000)
+    await new Promise(r => setTimeout(r, 300));
+  const pref = lirePreference();
+  if (pref) {
+    const ok = await appliquerPreference(pref);
+    charger();
+    if (!ok) ouvrirAccueil(null); // ressource disparue du catalogue : redemander
+  } else {
+    charger();                    // affiche tout pendant que l'utilisateur choisit
+    ouvrirAccueil(null);
+  }
+})();
 </script>
 </body>
 </html>

@@ -67,6 +67,20 @@ Les types **Examen** (écrit ou oral) et **Exercices cotés** portent une
 étiquette rouge en bas de case (centrée) ; le type étant affiché au bas de la
 case, les metadonnées utiles restent lisibles au-dessus.
 
+## Préférences mémorisées (cookies)
+
+À la première visite, un écran d'accueil demande la **formation** et le
+**groupe de TP** (optionnel) ; le choix est enregistré dans des cookies
+(`hp_categorie`, `hp_ressource`, `hp_groupe`, validité 1 an) et réappliqué
+automatiquement à chaque ouverture de la page. Si la formation choisie
+disparaît du catalogue, l'écran d'accueil se rouvre. Le bouton **Passer**
+permet de ne rien mémoriser (tout l'horaire s'affiche alors). Les boutons de
+la page restent utilisables à tout moment ; choisir une autre formation ne
+réécrit le cookie qu'en passant par l'accueil.
+
+👉 Astuce : pour retrouver l'écran d'accueil, effacez les cookies `hp_*` du
+site (ou utilisez une fenêtre privée).
+
 ## Mémo des cours
 
 Certaines descriptions UMONS contiennent une ligne « Mémo : … » (~3 800 cours
