@@ -207,10 +207,19 @@ Au démarrage la mémoire est amorcée depuis l'archive persistée (les semaines
 déjà connues sont servies immédiatement). La passe annuelle de fond démarre
 ~30 s après le lancement : ~1 minute pour les 234 formations, puis 15 à
 20 minutes pour les ~1 159 groupes de TD (progression dans les journaux :
-« Passe annuelle : 25/234… », « Passe groupes : 50/1159… »). Empreinte
-typique : ~0,5 à 0,8 Go de RAM une fois l'année en mémoire (prévoir la
-limite de mémoire du conteneur TrueNAS en conséquence). Pendant ce temps,
-le bandeau 📂 de la page signale « Passe annuelle en cours » ; les semaines
+« Passe annuelle : 25/234… », « Passe groupes : 50/1159… »). Empreinte RAM
+mesurée sur l'archive complète de 73 436 cours chargée en mémoire :
+
+- Python + interpréteur (image python:3.12-slim) : ~30 Mo
+- Pool mémoire (toute l'année + groupes en dictionnaires) : ~320 Mo
+- Pics pendant les passes de fond (téléchargements + parsing ICS) : ≤ ~500 Mo
+- Impact des requêtes web (`/api/horaires`, `/api/ressources`) : négligeable
+  (la réponse est un filtre du pool, ~1 Mo de JSON) — pas de croissance de
+  l'empreinte avec le trafic.
+
+**Prévois une limite de 1 Go de RAM pour le conteneur TrueNAS** (0,5 Go
+dynamiques + marge pour les passes, avec un peu de swap disponible).
+Pendant la passe, le bandeau 📂 de la page signale « Passe annuelle en cours » ; les semaines
 lointaines se remplissent au fur et à mesure, puis l'indicateur passe à
 `annuel_pret: true` (`/api/semaines`). Les horaires d'une formation
 sélectionnée restent disponibles immédiatement pendant la passe.
