@@ -203,7 +203,7 @@ function majListeRessources() {
   if ([...sel.options].some(o => o.value === conserve)) sel.value = conserve;
 }
 
-function majListeGroupes() {
+function majListeGroupes(liste) {
   const sel = document.getElementById("groupe");
   const recherche = document.getElementById("groupeRecherche").value.trim().toLowerCase();
   const conserve = sel.value;
@@ -211,13 +211,35 @@ function majListeGroupes() {
   const tete = document.createElement("option");
   tete.value = ""; tete.textContent = "Tous les groupes";
   sel.appendChild(tete);
-  for (const g of catalogue.groupes) {
-    if (recherche && !g.toLowerCase().includes(recherche)) continue;
+  for (const item of liste || catalogue.groupes) {
+    // l'API renvoie soit des chaînes, soit {valeur, affichage} (groupes de TP du catalogue)
+    const obj = (item && typeof item === "object") ? item : { valeur: item, affichage: item };
+    if (recherche && !obj.valeur.toLowerCase().includes(recherche)
+        && !(obj.affichage || "").toLowerCase().includes(recherche)) continue;
     const o = document.createElement("option");
-    o.value = g; o.textContent = g;
+    o.value = obj.valeur; o.textContent = obj.affichage;
     sel.appendChild(o);
   }
   if ([...sel.options].some(o => o.value === conserve)) sel.value = conserve;
+}
+
+async function majGroupesPourRessource() {
+  // avec une sélection de formation, l'API renvoie les groupes de CETTE
+  // formation (y compris les TP récoltés, ex. .BAB2 - Ir. civil -> 01…12, A…D)
+  // (valeur du select catégorie au pluriel : formations / salles)
+  const type = document.getElementById("categorie").value;
+  const ressource = document.getElementById("ressource").value;
+  if (type === "formations" && ressource) {
+    try {
+      const r = await fetch(new URL("/api/ressources?type=formation&ressource=" + encodeURIComponent(ressource), location));
+      const data = await r.json();
+      if (data.groupes && data.groupes.length) {
+        majListeGroupes(data.groupes);
+        return;
+      }
+    } catch (e) { /* repli sur la liste globale */ }
+  }
+  majListeGroupes();
 }
 
 function lireFlux() {
@@ -430,9 +452,14 @@ document.getElementById("categorie").onchange = () => {
   document.getElementById("recherche").style.display = type ? "" : "none";
   document.getElementById("recherche").value = "";
   majListeRessources();
+  document.getElementById("groupe").value = "";
+  majGroupesPourRessource();
   charger();
 };
-document.getElementById("ressource").onchange = charger;
+document.getElementById("ressource").onchange = async () => {
+  await majGroupesPourRessource();
+  charger();
+};
 document.getElementById("groupe").onchange = charger;
 document.getElementById("groupeRecherche").addEventListener("input", majListeGroupes);
 document.getElementById("prec").onclick = () => { lundi.setDate(lundi.getDate() - 7); charger(); };
@@ -446,7 +473,7 @@ document.getElementById("reset").onclick = () => {
   document.getElementById("groupe").value = "";
   document.getElementById("filtre").value = "";
   majListeRessources();
-  majListeGroupes();
+  majGroupesPourRessource();
   charger();
 };
 document.getElementById("filtre").addEventListener("keydown", e => { if (e.key === "Enter") charger(); });

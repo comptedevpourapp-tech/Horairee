@@ -70,6 +70,27 @@ cette limite ont été contournés :
 3. **À la demande** : sélectionner une formation hors fenêtre télécharge
    immédiatement son flux annuel (badge « 📅 année complète » dans la page).
 
+### Groupes de TP (TD) — ex. « BAB civil - B »
+
+Umons ne publie presque aucun sous-groupe dans les flux publics de formation :
+les TD/TP sont des **ressources distinctes** d'HyperPlanning (`genreRessource 4`).
+Le dépôt embarque donc un second catalogue, `liens_groupes.json`, récolté de la
+même façon (client officiel piloté dans jsdom) :
+
+1. `outils/recolter_groupes.js` énumère, pour chaque formation du catalogue,
+   ses TD/options (`FonctionListeDeTDEtOptionDuDiplome`) puis obtient le lien
+   iCal annuel de chaque groupe (`FonctionParametresICAL`) ;
+2. au chargement d'une formation, la liste « Groupe (TP) » de la page se
+   complète avec ces groupes (libellés courts : « B », « 01 »…) ;
+3. sélectionner un groupe fusionne alors le flux iCal annuel **du groupe** :
+   ses TP, séminaires et cours spécifiques apparaissent dans toute l'année
+   (les cours communs à la formation restent visibles, comme sur HyperPlanning).
+
+Variables : `HP_LIENS_GROUPES` (défaut `liens_groupes.json` à côté du code ;
+monter un fichier TrueNAS pour le remplacer). Récolte pareil :
+`DELAI`, `SORTIE`, `LIENS_FORMATIONS`, `K`/`N` (partition, pour lancer
+plusieurs sessions en parallèle).
+
 Résultat : toute semaine de l'année 2026-2027 est consultable pour les
 formations du catalogue — la navigation est indépendante de la fenêtre
 glissante, de septembre 2026 à juillet 2027.

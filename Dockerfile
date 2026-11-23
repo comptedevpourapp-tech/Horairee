@@ -12,7 +12,7 @@ ENV HP_VERSION=${GIT_SHA}
 
 WORKDIR /app
 
-COPY horaires.py serveur_horaires.py page_horaires.html liens_annuels.json ./
+COPY horaires.py serveur_horaires.py page_horaires.html liens_annuels.json liens_groupes.json ./
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends tzdata \

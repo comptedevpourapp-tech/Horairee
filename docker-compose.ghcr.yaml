@@ -27,6 +27,8 @@ services:
       # flux iCal annuels (toute l'année) tirés du catalogue intégré liens_annuels.json :
       # rafraîchissement des 234 formations publiques toutes les 24 h (0 = désactiver)
       HP_ANNUEL_HEURES: "24"
+      # facultatif : catalogue de groupes de TP (defaut : liens_groupes.json integre)
+      # HP_LIENS_GROUPES: "/app/data/liens_groupes.json"
       # Facultatif : URL iCal d'une ressource precise (diplome, promo, salle, enseignant)
       # HP_URL: "https://hplanning2026.umons.ac.be/ical/xxxx.ics?idICal=...&param=..."
 volumes:

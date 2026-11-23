@@ -16,7 +16,7 @@ Lance le serveur :
   consultables pour chaque formation, sans intervention. Désactivable avec
   HP_ANNUEL_HEURES=0 ; en cas d'année suivante : relancer la récolte (voir README).
 - Variables d'environnement : HP_HOST, HP_PORT, HP_URL, HP_ARCHIVE,
-  CAPTURE_HEURES, HP_LIENS_ANNUELS, HP_ANNUEL_HEURES.
+  CAPTURE_HEURES, HP_LIENS_ANNUELS, HP_LIENS_GROUPES, HP_ANNUEL_HEURES.
 
 Aucune dépendance externe : bibliothèque standard uniquement.
 """
@@ -47,6 +47,10 @@ FICHIER_LIENS = Path(os.environ.get(
     "HP_LIENS_ANNUELS",
     str(Path(__file__).with_name("liens_annuels.json")),
 ))
+FICHIER_GROUPES = Path(os.environ.get(
+    "HP_LIENS_GROUPES",
+    str(Path(__file__).with_name("liens_groupes.json")),
+))
 INTERVALLE_ANNUEL = float(os.environ.get("HP_ANNUEL_HEURES", "24")) * 3600
 DELAIS_ANNUEL = 0.4      # pause entre deux flux annuels (politesse envers le serveur UMONS)
 DELAI_BOUCLE_ANNUEL = 30  # attendue avant la première passe annuelle au démarrage
@@ -57,6 +61,8 @@ DUREE_CACHE = 300
 
 CATALOGUE_ANNUEL = {}          # libellé formation -> lien iCal annuel
 ANNUEL_MEMOIRE = {}            # libellé -> {quand, evenements} (cache TTL)
+CATALOGUE_GROUPES = {}         # libellé formation -> {libellé TD -> lien iCal annuel}
+GROUPES_MEMOIRE = {}           # "formation\x00TD" -> {quand, evenements}
 VERROU_ANNUEL = threading.Lock()
 
 # Protège ARCHIVE contre les accès concurrents (fil annuel de fond, capture
@@ -66,6 +72,52 @@ VERROU_ARCHIVE = threading.RLock()
 ANNUEL_PRET = False            # True après la première passe annuelle complète
 
 PREFIXE_COURS = re.compile(r"^Cours-(\d+)-(\d+)-")
+CHEVRONS_GROUPE = re.compile(r"<[^<>]*>")
+
+
+def libelle_court_td(td):
+    """« BAB2 - Ir Civil - B » -> « B » (la formation est déjà sélectionnée
+    juste au-dessus, inutile de la répéter)."""
+    morceaux = [m.strip() for m in (td or "").split(" - ")]
+    if len(morceaux) >= 2 and 0 < len(morceaux[-1]) <= 8:
+        return morceaux[-1]
+    return td
+
+
+def nettoyage_groupe(valeur):
+    """Un groupe HyperPlanning est préfacé par sa formation entre chevrons
+    (ex. «&lt;.BAB2 - Ir. civil&gt;BAB2 - Ir Civil - B») ; on retire le
+    préfixe pour garder un libellé propre et filtrable."""
+    return CHEVRONS_GROUPE.sub("", valeur or "").strip()
+
+
+def retirer_suffixe_td(texte, groupe):
+    """Retire « - <formation>Groupe / type » des intitulés, où qu'il soit.
+
+    Un flux TD suffixe la matière par le groupe, mais les variantes sont
+    nombreuses : « - GroupeB - TP », « - GroupeB - C (FR) », combinaisons
+    « - GroupeA, GroupeB »… Un simple endswith(groupe) laisse donc des
+    résidus. On coupe à partir de la première occurrence du libellé (ou de
+    sa partie formation, la plus courte victorieuse) en tolérant les
+    variantes d'espacement (ex. « -  01 » à double espace)."""
+    texte = CHEVRONS_GROUPE.sub("", (texte or "")).strip()
+    if not texte or not groupe:
+        return texte
+    compresse = re.sub(r"\s{2,}", " ", groupe.strip())
+    candidats = {groupe.strip(), compresse}
+    parties = compresse.split(" - ")
+    if len(parties) > 1:
+        prefixe = " - ".join(parties[:-1])
+        candidats |= {prefixe, re.sub(r"\s{2,}", " ", prefixe)}
+    resultat = texte
+    for candidat in candidats:
+        motif = r"\s*-\s*".join(
+            re.escape(p).replace("\\ ", "\\s+") for p in candidat.split(" - "))
+        coupe = re.sub(rf"[\s,\-]*(?:{motif}).*$", "", texte)
+        coupe = re.sub(r"\s{2,}", " ", coupe).strip(" -,")
+        if coupe and len(coupe) < len(resultat):
+            resultat = coupe
+    return resultat
 
 
 def charger_catalogue_annuel():
@@ -88,6 +140,33 @@ def charger_catalogue_annuel():
             url = base + "/" + lien.lstrip("/")
         catalogue[libelle] = url
     CATALOGUE_ANNUEL = catalogue
+
+
+def charger_catalogue_groupes():
+    """Chargé une seule fois au boot : liens_groupes.json = les flux iCal
+    annuels des groupes de TD (TP) par formation (récoltés via le client
+    officiel, voir outils/recolter_groupes.js)."""
+    global CATALOGUE_GROUPES
+    catalogue = {}
+    try:
+        brut = json.loads(FICHIER_GROUPES.read_text(encoding="utf-8"))
+    except Exception as err:
+        print(f"Catalogue de groupes indisponible ({err}) : le choix d'un groupe de TP se limitera aux groupes publiés.", file=sys.stderr)
+        CATALOGUE_GROUPES = {}
+        return catalogue
+    base = getattr(horaires, "BASE", "")
+    for formation, tds in brut.items():
+        if not isinstance(tds, dict):
+            continue
+        pour_formation = {}
+        for libelle, lien in tds.items():
+            if not lien:
+                continue
+            url = lien if lien.startswith("http") else base + "/" + lien.lstrip("/")
+            pour_formation[libelle] = url
+        if pour_formation:
+            catalogue[formation] = pour_formation
+    CATALOGUE_GROUPES = catalogue
     if catalogue:
         print(f"Catalogue de flux annuels chargé : {len(catalogue)} formations.")
     return catalogue
@@ -264,9 +343,82 @@ def obtenir_annuel(ressource):
                 elif cle in ("salle", "salles"):
                     e["salles_liste"] += valeurs
                 elif cle in ("groupe", "groupes"):
-                    e["groupes"] += valeurs
+                    e["groupes"] += [g for g in (nettoyage_groupe(v) for v in valeurs) if g]
         enregistrer_dans_archive(evenements)
         ANNUEL_MEMOIRE[ressource] = {"quand": maint, "evenements": evenements}
+        return evenements
+
+
+def obtenir_annuel_groupe(ressource, groupe):
+    """Télécharge (cache TTL) le flux iCal annuel d'un groupe de TD (ressource
+    « TD » d'HyperPlanning) et l'archive. Les descriptions reçoivent
+    « Formations : » et « Groupes : » pour que les filtres existants
+    s'appliquent tels quels."""
+    if not ressource or not groupe:
+        return []
+    tds = CATALOGUE_GROUPES.get(ressource)
+    if tds is None and not ressource.startswith("."):
+        tds = CATALOGUE_GROUPES.get("." + ressource.lstrip("."))
+    lien = (tds or {}).get(groupe)
+    if not lien:
+        return []
+    cle = ressource + "\x00" + groupe
+    with VERROU_ANNUEL:
+        maint = time.time()
+        entree = GROUPES_MEMOIRE.get(cle)
+        if entree and maint - entree["quand"] < INTERVALLE_ANNUEL:
+            return entree["evenements"]
+        evenements = None
+        derniere_erreur = None
+        for essai in range(2):
+            try:
+                evenements = horaires.parser_ics(horaires.telecharger_ics(lien))
+                break
+            except Exception as err:
+                derniere_erreur = err
+                if essai == 0:
+                    time.sleep(3)
+        if evenements is None:
+            print(f"Flux annuel de groupe indisponible pour {groupe} ({ressource}) ({derniere_erreur}).", file=sys.stderr)
+            if entree and maint - entree["quand"] < 7 * 86400:
+                return entree["evenements"]
+            return []
+        for e in evenements:
+            desc = html.unescape(e.get("description") or "")
+            # les flux de TD suffixent la matière par « <formation>Groupe »
+            # (parfois suivi d'un type, combiné à d'autres groupes…) : on
+            # retire le suffixe pour garder un intitulé lisible ; le faire
+            # ici garantit une archive propre pour toutes les vues
+            e["matiere"] = retirer_suffixe_td(nettoyage_groupe(e.get("matiere") or ""), groupe)
+            ajout = []
+            if "formation" not in desc.lower():
+                ajout.append(f"Formations : {ressource}")
+            if "groupe" not in desc.lower():
+                ajout.append(f"Groupes : {groupe}")
+            if ajout:
+                desc = (desc + "\n" + "\n".join(ajout)).strip()
+            e["description"] = desc
+            e["formations"] = []
+            e["salles_liste"] = []
+            e["groupes"] = []
+            infos = analyser(e)
+            e.update({"code": infos["code"], "intitule": infos["intitule"],
+                      "enseignants": infos["enseignants"], "type": infos["type"]})
+            for ligne in desc.split("\n"):
+                ligne = ligne.strip()
+                if ":" not in ligne:
+                    continue
+                cle_ligne, _, valeur = ligne.partition(":")
+                cle_ligne = cle_ligne.strip().lower()
+                valeurs = [html.unescape(v.strip()) for v in valeur.split(",") if v.strip()]
+                if cle_ligne in ("formation", "formations"):
+                    e["formations"] += valeurs
+                elif cle_ligne in ("salle", "salles"):
+                    e["salles_liste"] += valeurs
+                elif cle_ligne in ("groupe", "groupes"):
+                    e["groupes"] += [g for g in (nettoyage_groupe(v) for v in valeurs) if g]
+        enregistrer_dans_archive(evenements)
+        GROUPES_MEMOIRE[cle] = {"quand": maint, "evenements": evenements}
         return evenements
 
 
@@ -338,7 +490,7 @@ def evenements_archive():
                 elif cle in ("salle", "salles"):
                     evenements[-1]["salles_liste"] += valeurs
                 elif cle in ("groupe", "groupes"):
-                    evenements[-1]["groupes"] += valeurs
+                    evenements[-1]["groupes"] += [g for g in (nettoyage_groupe(v) for v in valeurs) if g]
         except Exception:
             continue
     return evenements
@@ -385,7 +537,7 @@ def obtenir_donnees(url_ics: str, autoriser_cache=True):
             elif cle in ("salle", "salles"):
                 e["salles_liste"] += valeurs
             elif cle in ("groupe", "groupes"):
-                e["groupes"] += valeurs
+                e["groupes"] += [g for g in (nettoyage_groupe(v) for v in valeurs) if g]
     CACHE.update(url=url_ics, quand=maintenant, evenements=evenements,
                  ressources=classer_champs(evenements))
     return evenements, CACHE["ressources"]
@@ -404,25 +556,33 @@ def boucle_capture(url_ics):
     fil.start()
 
 
-def evenements_en_json(evenements):
+def evenements_en_json(evenements, groupe=""):
     resultat = []
     for e in evenements:
         debut = e["debut"].astimezone(horaires.TZ_LOCAL)
         fin = e["fin"].astimezone(horaires.TZ_LOCAL)
         duree = max((fin - debut).total_seconds() // 60, 0)
-        infos = analyser(e)
+        # les flux de TD suffixent la matière par « - <formation>Groupe / type » :
+        # nettoyage à l'affichage (guérit aussi les entrées déjà archivées)
+        matiere_propre = (e.get("matiere") or "").split(" - <")[0].strip()
+        if groupe:
+            matiere_propre = retirer_suffixe_td(matiere_propre, groupe)
+        infos = analyser({"matiere": matiere_propre, "description": e.get("description", "")})
+        intitule_propre = (e.get("intitule") or infos["intitule"]).split(" - <")[0].strip()
+        if groupe:
+            intitule_propre = retirer_suffixe_td(intitule_propre, groupe)
         resultat.append({
             "debut": debut.isoformat(),
             "fin": fin.isoformat(),
             "duree_min": int(duree),
-            "matiere": e.get("matiere", ""),
+            "matiere": matiere_propre,
             "salle": e.get("salle", ""),
             "description": e.get("description", ""),
             "formations": e.get("formations") or [],
             "salles_liste": e.get("salles_liste") or [],
             "groupes": e.get("groupes") or [],
             "code": e.get("code") or infos["code"],
-            "intitule": e.get("intitule") or infos["intitule"],
+            "intitule": intitule_propre or e.get("intitule", ""),
             "enseignants": e.get("enseignants") or infos["enseignants"],
             "type": e.get("type") or infos["type"],
             "maj": e.get("maj", ""),
@@ -531,11 +691,18 @@ class Controleur(BaseHTTPRequestHandler):
                             continue
                         for g in e.get("groupes") or []:
                             if g:
-                                groupes.setdefault(g, g)
+                                groupes.setdefault(g, libelle_court_td(g))
                     else:
                         for g in e.get("groupes") or []:
                             if g:
-                                groupes.setdefault(g, g)
+                                groupes.setdefault(g, libelle_court_td(g))
+                if type_ressource == "formation" and ressource and CATALOGUE_GROUPES:
+                    # groupes de TD récoltés (flux iCal annuels) pour cette formation
+                    tds = (CATALOGUE_GROUPES.get(ressource)
+                           or CATALOGUE_GROUPES.get("." + ressource.lstrip(".")) or {})
+                    for td in tds:
+                        if td:
+                            groupes.setdefault(td, libelle_court_td(td))
                 # dédoublonnage approx : la même formation peut avoir les mêmes
                 # groupes exprimés avec virgules répétées
                 if CATALOGUE_ANNUEL:
@@ -547,7 +714,8 @@ class Controleur(BaseHTTPRequestHandler):
                 self._envoyer(200, json.dumps({
                     "formations": [{"valeur": v, "affichage": a} for v, a in ressources["formations"].items()],
                     "salles": [{"valeur": s, "affichage": a} for s, a in ressources["salles"].items()],
-                    "groupes": sorted(groupes, key=str.lower),
+                    "groupes": [{"valeur": v, "affichage": a}
+                                for v, a in sorted(groupes.items(), key=lambda kv: kv[0].lower())],
                 }, ensure_ascii=False), "application/json")
             elif analyse.path == "/api/horaires":
                 url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
@@ -569,6 +737,13 @@ class Controleur(BaseHTTPRequestHandler):
                 if CATALOGUE_ANNUEL and type_ressource == "formation" and ressource:
                     try:
                         evenements_annuels = obtenir_annuel(ressource)
+                    except Exception:
+                        traceback.print_exc(file=sys.stderr)
+                valeur_groupe = (params.get("groupe", [""])[0] or "").strip()
+                if valeur_groupe and type_ressource == "formation" and ressource and CATALOGUE_GROUPES:
+                    # les cours propres au groupe (TP...) viennent du flux iCal annuel du TD
+                    try:
+                        evenements_annuels = evenements_annuels + obtenir_annuel_groupe(ressource, valeur_groupe)
                     except Exception:
                         traceback.print_exc(file=sys.stderr)
 
@@ -652,7 +827,7 @@ class Controleur(BaseHTTPRequestHandler):
                     "groupe": groupe,
                     "fenetre": fenetre,
                     "source": source,
-                    "cours": evenements_en_json(selection),
+                    "cours": evenements_en_json(selection, groupe=valeur_groupe),
                 }, ensure_ascii=False), "application/json")
             else:
                 self._envoyer(404, "Introuvable", "text/plain")
@@ -674,6 +849,7 @@ def main(argv=None):
     determiner_version()
     charger_archive()
     charger_catalogue_annuel()
+    charger_catalogue_groupes()
     global ANNUEL_PRET
     if INTERVALLE_ANNUEL > 0 and CATALOGUE_ANNUEL:
         boucle_annuel()
