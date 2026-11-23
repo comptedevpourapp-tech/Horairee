@@ -163,12 +163,16 @@ def filtre_ricochet(evenement, du: datetime = None, au: datetime = None) -> bool
 JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
 
 MOTS_TYPE = [
-    ("Examen", ("examen", "rattrapage")),
-    ("TP", ("tp", "groupes tp", "labo", "pratique")),
+    ("Examen", ("examen", "rattrapage", "défense", "soutenance", "jury")),
+    ("Projet", ("projet", "project")),
+    ("Stage", ("stage", "stagiaire")),
+    ("TFE", ("tfe", "mémoire", "travail de fin")),
+    ("TP", ("tp", "groupes tp", "labo", "pratique", "atelier")),
     ("Exercices", ("exercice",)),
-    ("Séminaire", ("séminaire", "seminaire")),
-    ("Conférence", ("conférence", "conference", "débat", "debat")),
-    ("Réunion", ("réunion", "reunion")),
+    ("Tutorat", ("tutorat",)),
+    ("Séminaire", ("séminaire", "seminaire", "workshop")),
+    ("Conférence", ("conférence", "conference", "débat", "debat", "colloque")),
+    ("Réunion", ("réunion", "reunion", "consultation")),
 ]
 RE_CODE = re.compile(r"\b[A-Z]{1,4}-[A-Z0-9]{2,5}-\d{3}\b")
 

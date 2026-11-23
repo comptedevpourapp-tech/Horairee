@@ -584,7 +584,9 @@ def evenements_en_json(evenements, groupe=""):
             "code": e.get("code") or infos["code"],
             "intitule": intitule_propre or e.get("intitule", ""),
             "enseignants": e.get("enseignants") or infos["enseignants"],
-            "type": e.get("type") or infos["type"],
+            # type toujours recalculé à l'affichage : guérit les entrées
+            # archivées avant l'extension des types (Projet, TFE, Tutorat…)
+            "type": infos["type"],
             "maj": e.get("maj", ""),
         })
     return resultat

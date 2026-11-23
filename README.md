@@ -47,6 +47,17 @@ disponible — un badge l'indique dans la page.
 Notes :
 - Pour l'emploi du temps d'une promo précise : dans l'interface `invite?fd=1`, ouvrez la ressource, cliquez le bouton iCal et copiez le lien permanent dans `HP_URL` ou le champ de la page.
 
+## Types de cours détectés
+
+Le type d'activité est déduit du libellé (UMONS n'a pas de champ dédié dans
+l'export public) et affiché comme pastille colorée : **Cours**, **Exercices**,
+**TP** (aussi « labo », « pratique », « atelier »), **Projet** (« project »),
+**Examen** (« rattrapage », « soutenance », « défense », « jury »), **Stage**,
+**TFE** (« mémoire », « travail de fin d'études »), **Tutorat**, **Séminaire**
+(« workshop »), **Conférence** (« colloque », « débat »), **Réunion**
+(« consultation »). Le type est recalculé à l'affichage : les entrées archivées
+avant l'extension des types sont réparées automatiquement, sans migration.
+
 ## Année entière, automatiquement
 
 L'export public « toutes salles » est limité par UMONS à la fenêtre publiée
