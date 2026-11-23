@@ -322,6 +322,7 @@ function charger() {
 }
 
 function afficher(data) {
+try {   // tout échec de rendu doit se voir (jamais une grille silencieusement vide)
   const ref = new Date(data.semaine + "T00:00:00");
   const jours = nomsJours.map((nom, i) => {
     const d = new Date(ref); d.setDate(ref.getDate() + i);
@@ -333,13 +334,18 @@ function afficher(data) {
 
   // Les marqueurs journée entière (Vacances, congés) ne sont pas des cours :
   // ils sortent de la grille et deviennent des pastilles au-dessus de l'en-tête.
-  const journeeEntiere = (c) => c.fin && c.debut.slice(11, 16) === "00:00"
-    && c.fin.slice(11, 16) === "00:00" && (new Date(c.fin) - new Date(c.debut)) >= 86400000;
+  const journeeEntiere = (c) => c.fin && c.debut && c.debut.slice(11, 16) === "00:00"
+    && c.fin.slice(11, 16) === "00:00" && (new Date(c.fin) - new Date(c.debut)) >= 86400000
+    && !isNaN(new Date(c.debut)) && !isNaN(new Date(c.fin));
   const grilleMarqueurs = [];
   const parJour = [[], [], [], [], [], [], []];
-  for (const c of data.cours) {
-    if (journeeEntiere(c)) { grilleMarqueurs.push(c); continue; }
-    parJour[(new Date(c.debut).getDay() + 6) % 7].push(c);
+  for (const c of (data.cours || [])) {
+    try {
+      const dtmp = new Date(c.debut);
+      if (isNaN(dtmp)) throw 0;              // événement illisible : ignoré, pas de crash
+      if (journeeEntiere(c)) { grilleMarqueurs.push(c); continue; }
+      parJour[(dtmp.getDay() + 6) % 7].push(c);
+    } catch (e) { /* événement illisible : ignoré */ }
   }
   const bandeMarqueurs = grilleMarqueurs.length
     ? '<div class="horsJours">' + grilleMarqueurs.map(c => {
@@ -401,7 +407,7 @@ function afficher(data) {
       for (let m = i; m < k; m++) bornes[m].nbCols = nbColsGroupe;
       i = k;
     }
-    for (const c of bornes) {
+    for (const c of bornes) try {
       const el = document.createElement("div");
       el.className = "cours";
       const intitule = c.intitule || (c.matiere.split(" - ")[0] || c.matiere);
@@ -429,7 +435,7 @@ function afficher(data) {
       colonnes[j].appendChild(el);
       total++;
       if (!legendes.has(intitule)) legendes.set(intitule, couleurB);
-    }
+    } catch (e) { console.warn("case de cours illisible ignorée", e); }
   }
 
   const legende = document.getElementById("legende");
@@ -479,6 +485,13 @@ function afficher(data) {
         : "Aucun cours cette semaine pour cette sélection.")
     : "";
   if (vueAnneeActive) majVueAnnee();          // la vue année suit la sélection
+} catch (err) {
+  // jamais une grille silencieusement vide : toujours un message lisible
+  const m = document.getElementById("message");
+  if (m) m.textContent = "Erreur d'affichage de la semaine : " + (err && err.message || err);
+  try { console.error("afficher()", err); } catch (e2) {}
+  if (vueAnneeActive) majVueAnnee();          // la vue année suit la sélection
+}
 }
 
 // ---------- Vue année (dézoom, ou bouton « Année ») ----------

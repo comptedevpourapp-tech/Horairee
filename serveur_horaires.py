@@ -828,6 +828,9 @@ class Controleur(BaseHTTPRequestHandler):
                 filtre = (params.get("filtre", [""])[0] or "").strip().lower()
                 selection = filtrer_evenements(liste_complete(), type_ressource,
                                                ressource, valeur_groupe, filtre)
+                # compter seulement les vrais cours : les marqueurs journée
+                # entière (Vacances, Férié) n'affichent rien dans la grille
+                selection = [e for e in selection if not est_marqueur_journee(e)]
                 compte = {}
                 for e in selection:
                     d = e["debut"].astimezone(horaires.TZ_LOCAL).date()
