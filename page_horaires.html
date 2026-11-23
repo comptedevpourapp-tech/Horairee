@@ -80,6 +80,20 @@
   #accueil button { padding: 8px 14px; border: none; border-radius: 6px; background: #2f6fd6; color: #fff; font-size: 14px; cursor: pointer; }
   #accueil button.second { background: #e3e7ef; color: #333; }
   .pastilleType { display: inline-block; font-size: 11px; border-radius: 10px; padding: 2px 10px; color: #fff; }
+  /* Vue année : cartes par mois, une ligne par semaine (nombre de cours) */
+  #vueAnnee { display: none; }
+  #vueAnnee.actif { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .mois { background: #fff; border: 1px solid #dde3ee; border-radius: 10px; padding: 10px 12px; }
+  .mois h4 { margin: 0 0 8px; font-size: 14px; color: #445; text-transform: capitalize; }
+  .scan { display: flex; flex-direction: column; gap: 3px; }
+  .semCell { display: flex; justify-content: space-between; align-items: center; gap: 6px;
+             border: 1px solid #e3e7f2; border-radius: 6px; padding: 3px 8px; font-size: 12px;
+             cursor: pointer; background: #fafbfe; }
+  .semCell:hover { background: #eef3ff; border-color: #b9c8ee; }
+  .semCell.vide { color: #99a3b8; background: #f4f5f8; }
+  .semCell.courante { border-color: #2f6fd6; box-shadow: 0 0 0 2px #2f6fd622; font-weight: bold; }
+  .semCell .nb { background: #2f6fd6; color: #fff; border-radius: 9px; padding: 1px 7px; font-size: 10px; }
+  .semCell.vide .nb { background: #c3cad9; }
   @media (max-width: 760px) {
     .cours { font-size: 9px; padding: 2px 3px; }
     .entete div { font-size: 10px; padding: 4px 2px; }
@@ -106,6 +120,7 @@
     <span id="badgeSource"></span>
     <button id="suiv" title="Semaine suivante">▶</button>
     <button id="auj">Cette semaine</button>
+    <button id="anneeBtn" title="Vue année : toutes les semaines de l'année (faites un dézoom de la page pour l'obtenir automatiquement, cliquez sur une semaine pour y naviguer)">Année</button>
   </div>
   <div class="controles">
     <label style="font-size:12px;">Groupe (TP) :</label>
@@ -125,6 +140,7 @@
   <div id="legende"></div>
   <div id="grille"></div>
   <div id="message">Chargement…</div>
+<div id="vueAnnee"></div>
 <div id="archiveInfo" style="font-size:12px;color:#666;margin-top:4px;">📂 Semaines disponibles…</div>
 <div id="version" style="font-size:11px;color:#888;margin-top:4px;"></div>
 </main>
@@ -442,7 +458,98 @@ function afficher(data) {
         ? "Aucune donnée enregistrée pour cette semaine (elle n'a jamais été publiée ni capturée ; le serveur UMONS ne publie que ~3 semaines glissantes — la passe annuelle du serveur la récupérera automatiquement)."
         : "Aucun cours cette semaine pour cette sélection.")
     : "";
+  if (vueAnneeActive) majVueAnnee();          // la vue année suit la sélection
 }
+
+// ---------- Vue année (dézoom, ou bouton « Année ») ----------
+let vueAnneeActive = false;
+let vueAnneeAuto = false;                    // déclenchée par le dézoom
+
+function enVueDezoome() {
+  // zoom-out navigateur : le viewport CSS grandit pendant que devicePixelRatio
+  // descend sous 1 — les deux ensemble distinguent un dézoom d'un grand écran
+  return window.innerWidth >= 1900 && (window.devicePixelRatio || 1) < 1.05;
+}
+function parametresVue(u) {
+  const type = document.getElementById("categorie").value;
+  const ressource = document.getElementById("ressource").value;
+  const groupe = document.getElementById("groupe").value;
+  const filtre = document.getElementById("filtre").value.trim();
+  if (type && ressource) {
+    u.searchParams.set("type", type === "formations" ? "formation" : "salle");
+    u.searchParams.set("ressource", ressource);
+  }
+  if (groupe) u.searchParams.set("groupe", groupe);
+  if (filtre) u.searchParams.set("filtre", filtre);
+  return u;
+}
+function entrerVueAnnee(auto) {
+  vueAnneeActive = true;
+  if (auto) vueAnneeAuto = true;
+  document.getElementById("grille").style.display = "none";
+  document.getElementById("message").style.display = "none";
+  majVueAnnee();
+}
+function quitterVueAnnee() {
+  vueAnneeActive = false;
+  vueAnneeAuto = false;
+  document.getElementById("grille").style.display = "";
+  document.getElementById("message").style.display = "";
+  document.getElementById("vueAnnee").classList.remove("actif");
+  charger();
+}
+async function majVueAnnee() {
+  if (!vueAnneeActive) return;
+  const v = document.getElementById("vueAnnee");
+  v.classList.add("actif");
+  v.innerHTML = "<p style='color:#777'>Chargement de la vue année…</p>";
+  try {
+    const r = await fetch(parametresVue(new URL("/api/semaines", location)));
+    const data = await r.json();
+    if (!data.nombre || !(data.semaines || []).length) {
+      v.innerHTML = "<p style='color:#777'>Aucune semaine disponible pour cette sélection.</p>";
+      return;
+    }
+    const parLundi = new Map(data.semaines.map(s => [s.debut, s.cours]));
+    const lundiCour = fmtDate(lundi);
+    const dernier = new Date(data.derniere + "T00:00:00");
+    const curseur = new Date(data.premiere + "T00:00:00");
+    curseur.setDate(curseur.getDate() - curseur.getDay() + 1);   // lundi de ce mois
+    let html = "";
+    while (curseur <= dernier) {
+      const mois = curseur.getMonth();
+      const nomMois = curseur.toLocaleDateString("fr-BE", { month: "long", year: "numeric" });
+      let lignes = "";
+      do {
+        const iso = fmtDate(curseur);
+        const nb = parLundi.get(iso) || 0;
+        lignes += "<div class='semCell" + (nb ? "" : " vide") + (iso === lundiCour ? " courante" : "") +
+                  "' data-lundi='" + iso + "' title='Aller à cette semaine'>" +
+                  "<span>semaine du " + curseur.toLocaleDateString("fr-BE", { day: "2-digit", month: "2-digit", year: "2-digit" }) + "</span>" +
+                  "<span class='nb'>" + nb + "</span></div>";
+        curseur.setDate(curseur.getDate() + 7);
+      } while (curseur.getMonth() === mois && curseur <= dernier);
+      html += "<div class='mois'><h4>" + nomMois + "</h4>" + lignes + "</div>";
+    }
+    v.innerHTML = html;
+    v.querySelectorAll(".semCell").forEach(c => {
+      c.onclick = () => {
+        lundi = new Date(c.dataset.lundi + "T00:00:00");
+        quitterVueAnnee();
+      };
+    });
+  } catch (e) {
+    v.innerHTML = "<p style='color:#a00'>Erreur vue année : " + e.message + "</p>";
+  }
+}
+document.getElementById("anneeBtn").onclick = () => {
+  if (vueAnneeActive) quitterVueAnnee();
+  else entrerVueAnnee(false);
+};
+if (window.addEventListener) window.addEventListener("resize", () => {
+  if (!vueAnneeActive && enVueDezoome()) entrerVueAnnee(true);
+  else if (vueAnneeActive && vueAnneeAuto && !enVueDezoome()) quitterVueAnnee();
+});
 
 function montrerFiche(c, intitule) {
   const fiche = document.getElementById("fiche");

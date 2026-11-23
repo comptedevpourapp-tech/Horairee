@@ -77,26 +77,34 @@ global.document = {
     const fn = new AsyncFunction("fetch", "URL", "location", "window", js + "\n;return { charger: typeof charger !== 'undefined' ? charger : null, appliquerPreference: typeof appliquerPreference !== 'undefined' ? appliquerPreference : null }");
     const fetchLocal = (u) => fetch(u);
     it = await fn(fetchLocal, URL, { toString: () => "http://127.0.0.1:" + port + "/" }, {});
+    // attente active : le serveur peut reconstruire son pool mémoire au premier
+    // appel (archive complète) ; le catalogue /api/ressources met du temps à venir
     await new Promise(r => setTimeout(r, 4000));
+    const tCat = Date.now();
+    while (Date.now() - tCat < 90000 && (!elements["ressource"] || elements["ressource"].options.length < 100))
+      await new Promise(r => setTimeout(r, 500));
   } catch (e) {
     console.log("ERREUR RUNTIME PAGE:", e && e.stack || e);
     process.exit(1);
   }
   const blocs = () => gridCols.reduce((n, c) => n + c.options.filter(o => o.className === "cours").length, 0);
   console.log("== message:", JSON.stringify(elements["message"] ? elements["message"].textContent : "(jamais touché)"));
-  console.log("== ressource options:", elements["ressource"].options.length);
-  console.log("== groupe options:", elements["groupe"].options.length);
+  console.log("== ressource options:", elements["ressource"] ? elements["ressource"].options.length : 0);
+  console.log("== groupe options:", elements["groupe"] ? elements["groupe"].options.length : 0);
   console.log("== blocs sans sélection (attendu 0 avec l'écran de choix):", blocs());
   console.log("== items légende:", (elements["legende"] ? elements["legende"].options : []).filter(c => c.className === "legende-item").length);
-  if (it && it.charger) {
-    it.majListeRessources && it.majListeRessources();
+  if (it && it.charger && elements["ressource"]) {
     const bab2 = elements["ressource"].options.find(o => o.value === ".BAB2 - Ir. civil");
     console.log("== .BAB2 - Ir. civil present dans la liste:", Boolean(bab2));
     if (it.appliquerPreference)
       await it.appliquerPreference({ categorie: "formations", ressource: ".BAB2 - Ir. civil", groupe: "BAB2 - Ir Civil - B" });
     console.log("== sélecteurs posés: ress. =", elements["ressource"].value, "| groupe =", elements["groupe"].value);
     it.charger();
-    await new Promise(r => setTimeout(r, 2500));
+    // attente active : le serveur peut reconstruire son pool en mémoire
+    const t0 = Date.now();
+    while (Date.now() - t0 < 30000 && (!elements["titreSemaine"] || !elements["titreSemaine"].textContent))
+      await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 500));
     console.log("== titreSemaine:", elements["titreSemaine"].textContent);
     console.log("== badgeSource:", elements["badgeSource"].textContent, "display:", elements["badgeSource"].style.display);
     console.log("== après sélection : blocs =", blocs(), "| message:", JSON.stringify(elements["message"] ? elements["message"].textContent : "(jamais touché)"));

@@ -749,6 +749,37 @@ def determiner_version():
         pass
 
 
+def filtrer_evenements(evenements, type_ressource, ressource, valeur_groupe,
+                       filtre, lundi=None, dimanche=None):
+    """Filtre commun des requêtes web : ressource (formation/salle), groupe,
+   mot-clé, et — si lundi/dimanche fournis — la fenêtre d'une semaine."""
+    selection = []
+    for e in evenements:
+        if lundi is not None and not (lundi <= e["debut"].astimezone(horaires.TZ_LOCAL) < dimanche):
+            continue
+        if type_ressource == "formation" and ressource and ressource not in (e.get("formations") or []):
+            continue
+        if type_ressource == "salle" and ressource and ressource not in (e.get("salles_liste") or []):
+            continue
+        dessous = " ".join(
+            [e.get("matiere", ""), e.get("salle", ""), e.get("description", ""),
+             " ".join(e.get("formations") or []), " ".join(e.get("salles_liste") or [])]
+        ).lower()
+        if filtre and filtre not in dessous:
+            continue
+        dessous_g = dessous + " " + " ".join(e.get("groupes") or []).lower()
+        if filtre and filtre not in dessous_g:
+            continue
+        if valeur_groupe:
+            groupes_e = [g for g in (e.get("groupes") or []) if g]
+            if valeur_groupe not in groupes_e:
+                cours_avec_ressource = (type_ressource == "formation" and ressource) or type_ressource == "salle"
+                if groupes_e or not cours_avec_ressource:
+                    continue
+        selection.append(e)
+    return selection
+
+
 class Controleur(BaseHTTPRequestHandler):
     def log_message(self, *args):
         pass
@@ -771,8 +802,15 @@ class Controleur(BaseHTTPRequestHandler):
             elif analyse.path == "/api/version":
                 self._envoyer(200, json.dumps({"version": VERSION_CODE}), "application/json")
             elif analyse.path == "/api/semaines":
+                # comptage PAR SEMAINE pour la sélection courante (vue année)
+                type_ressource = (params.get("type", [""])[0] or "").strip().lower()
+                ressource = (params.get("ressource", [""])[0] or "").strip()
+                valeur_groupe = (params.get("groupe", [""])[0] or "").strip()
+                filtre = (params.get("filtre", [""])[0] or "").strip().lower()
+                selection = filtrer_evenements(liste_complete(), type_ressource,
+                                               ressource, valeur_groupe, filtre)
                 compte = {}
-                for e in liste_complete():
+                for e in selection:
                     d = e["debut"].astimezone(horaires.TZ_LOCAL).date()
                     lundi = (d - timedelta(days=d.weekday())).isoformat()
                     compte[lundi] = compte.get(lundi, 0) + 1
@@ -923,30 +961,8 @@ class Controleur(BaseHTTPRequestHandler):
                 filtre = (params.get("filtre", [""])[0] or "").strip().lower()
                 groupe = (params.get("groupe", [""])[0] or "").strip()
 
-                selection = []
-                for e in evenements:
-                    if not (lundi <= e["debut"].astimezone(horaires.TZ_LOCAL) < dimanche):
-                        continue
-                    if type_ressource == "formation" and ressource and ressource not in (e.get("formations") or []):
-                        continue
-                    if type_ressource == "salle" and ressource and ressource not in (e.get("salles_liste") or []):
-                        continue
-                    dessous = " ".join(
-                        [e.get("matiere", ""), e.get("salle", ""), e.get("description", ""),
-                         " ".join(e.get("formations") or []), " ".join(e.get("salles_liste") or [])]
-                    ).lower()
-                    if filtre and filtre not in dessous:
-                        continue
-                    dessous_g = dessous + " " + " ".join(e.get("groupes") or []).lower()
-                    if filtre and filtre not in dessous_g:
-                        continue
-                    if groupe:
-                        groupes_e = [g for g in (e.get("groupes") or []) if g]
-                        if groupe not in groupes_e:
-                            cours_avec_ressource = (type_ressource == "formation" and ressource) or type_ressource == "salle"
-                            if groupes_e or not cours_avec_ressource:
-                                continue
-                    selection.append(e)
+                selection = filtrer_evenements(evenements, type_ressource, ressource,
+                                               valeur_groupe, filtre, lundi, dimanche)
                 selection.sort(key=lambda e: e["debut"])
 
                 if url_explicite:

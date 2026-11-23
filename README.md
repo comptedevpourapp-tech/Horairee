@@ -92,6 +92,23 @@ ligne avec ellipsis) ainsi que dans la fiche détail. Les mémos qui ne font
 que répéter le type ou l'intitulé déjà affichés sont masqués (comparaison
 sans accents ni pluriel).
 
+## Vue année : dézoomer pour voir toutes les semaines
+
+Dézoomer la page (Ctrl + Moins — le viewport CSS grandit pendant que le
+zoom passe sous 100 %) transforme l'affichage automatiquement en **vue annuelle** :
+une carte par mois, de la première à la dernière semaine disponible, avec
+pour chaque semaine une ligne « semaine du dd/mm/aa » accompagnée du
+**nombre de cours** (semaines sans cours grisées, semaine courante entourée).
+La grille horaire et le message sont masqués pour laisser toute la place à la
+vue. Les compteurs suivent la sélection en cours (formation, groupe de TP,
+champ filtre). Pour naviguer : **cliquer une semaine** → retour direct à la
+grille horaire de cette semaine. Re-zoomer (revenir à 100 %) ramène la
+grille et maintient la semaine choisie. Le bouton « Année » de la barre de semaine fait la même
+chose sans dézoomer (re-clic pour refermer). Côté serveur, la
+connexion vient de `/api/semaines`, qui accepte désormais les mêmes filtres
+que `/api/horaires` (`type`, `ressource`, `groupe`, `filtre`) et compte les
+cours par semaine pour la sélection demandée.
+
 ## Année entière, automatiquement
 
 L'export public « toutes salles » est limité par UMONS à la fenêtre publiée
