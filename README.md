@@ -118,6 +118,16 @@ pastilles au-dessus de l'en-tête (ex. « 📌 Vacances : du 19/12/26 au
 04/01/27 »), quels que soient le fuseau du navigateur et le flux source
 (les doublons formateurs/groupe du même marqueur sont fusionnés).
 
+## Cours communs et diagnostic
+
+Quand une formation **et** un groupe sont sélectionnés, les cours communs (sans
+groupe attribué — par ex. cours du matin du Q2 "pour tout le monde" à partir du
+01/02) restent affichés : la fiche d'un tel cours rappelle « aucun attribué —
+cours commun (affiché pour tous les groupes) ». Une ligne « ♻ formations/groupes
+en mémoire » (sous le bandeau 📂) montre en direct l'avancement des passes de
+fond (⏳ en cours, ~20 minutes pour les 1 159 groupes après un redémarrage) ;
+`/api/etat` donne le détail (pool, archive, live, passes).
+
 ## Année entière, automatiquement
 
 L'export public « toutes salles » est limité par UMONS à la fenêtre publiée

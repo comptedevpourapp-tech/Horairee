@@ -145,6 +145,7 @@
   <div id="message">Chargement…</div>
 <div id="vueAnnee"></div>
 <div id="archiveInfo" style="font-size:12px;color:#666;margin-top:4px;">📂 Semaines disponibles…</div>
+<div id="etatPasses" style="font-size:12px;color:#666;margin-top:2px;"></div>
 <div id="version" style="font-size:11px;color:#888;margin-top:4px;"></div>
 </main>
 <div id="voile"></div>
@@ -213,6 +214,17 @@ function chargerRessources() {
     } else {
       p.textContent = "📂 Aucune semaine archivée pour l'instant.";
     }
+  }).catch(() => {});
+  fetch(new URL("/api/etat", location)).then(r => r.json()).then(t => {
+    const parts = [];
+    const af = t.annuel_formations || {}, ag = t.annuel_groupes || {};
+    parts.push(af.pret
+      ? "📣 formations en mémoire : " + (af.memoisees || 0) + " ✓"
+      : "⏳ passe formations : " + (af.memoisees || 0) + "/" + (af.catalogue || 0) + " en cours");
+    parts.push(ag.pret
+      ? "groupes en mémoire : " + (ag.memoises || 0) + " ✓"
+      : "⏳ passe groupes : " + Math.min(ag.memoises || 0, ag.catalogue || 0) + "/" + (ag.catalogue || 0) + " en cours (comptez ~20 min après un redémarrage)");
+    document.getElementById("etatPasses").textContent = "♻ " + parts.join(" · ");
   }).catch(() => {});
   fetch(new URL("/api/ressources", location)).then(r => r.json()).then(data => {
     catalogue = {formations: data.formations || [], salles: data.salles || [], groupes: data.groupes || []};
@@ -600,7 +612,8 @@ function montrerFiche(c, intitule) {
     "<dt>Local</dt><dd>" + echapper(c.salle || "—") + "</dd>" +
     (ens ? "<dt>Enseignant(s)</dt><dd>" + echapper(ens) + "</dd>" : "") +
     (c.memo ? "<dt>Mémo</dt><dd>📝 " + echapper(c.memo) + "</dd>" : "") +
-    (c.groupes && c.groupes.length ? "<dt>Groupe(s)</dt><dd>" + echapper(c.groupes.join(", ")) + "</dd>" : "") +
+    (c.groupes && c.groupes.length ? "<dt>Groupe(s)</dt><dd>" + echapper(c.groupes.join(", ")) + "</dd>"
+      : "<dt>Groupe(s)</dt><dd>aucun attribué — cours commun (affiché pour tous les groupes)</dd>") +
     (c.formations && c.formations.length ? "<dt>Formation(s)</dt><dd>" + echapper(c.formations.map(f => f.replace(/^\./, "")).join(", ")) + "</dd>" : "") +
     (c.maj ? "<dt>Dernière mise à jour</dt><dd>" + echapper(c.maj) + "</dd>" : "") +
     (c.description ? "<dt>Description d’origine</dt><dd style='white-space:pre-wrap;font-size:12px;color:#555;'>" + echapper(c.description) + "</dd>" : "") +

@@ -820,6 +820,30 @@ class Controleur(BaseHTTPRequestHandler):
                 self._envoyer(200, PAGE.read_text(encoding="utf-8"), "text/html")
             elif analyse.path == "/api/version":
                 self._envoyer(200, json.dumps({"version": VERSION_CODE}), "application/json")
+            elif analyse.path == "/api/etat":
+                # diagnostic : ce que le serveur a réellement en mémoire
+                with VERROU_ANNUEL:
+                    nf_ann = len(ANNUEL_MEMOIRE)
+                    ng_ann = len(GROUPES_MEMOIRE)
+                live = list(CACHE.get("evenements") or [])
+                fenetre_live = None
+                if live:
+                    fenetre_live = {
+                        "debut": min(e["debut"] for e in live).date().isoformat(),
+                        "fin": max(e["fin"] for e in live).date().isoformat(),
+                    }
+                self._envoyer(200, json.dumps({
+                    "version": VERSION_CODE,
+                    "pool_total": len(liste_complete()),
+                    "archive_cours": len(evenements_archive()),
+                    "live_cours": len(live),
+                    "live_fenetre": fenetre_live,
+                    "annuel_formations": {"memoisees": nf_ann, "catalogue": len(CATALOGUE_ANNUEL),
+                                          "pret": ANNUEL_PRET},
+                    "annuel_groupes": {"memoises": ng_ann,
+                                       "catalogue": sum(len(v or {}) for v in (CATALOGUE_GROUPES or {}).values()),
+                                       "pret": ANNUEL_GROUPES_PRET},
+                }, ensure_ascii=False), "application/json")
             elif analyse.path == "/api/semaines":
                 # comptage PAR SEMAINE pour la sélection courante (vue année)
                 type_ressource = (params.get("type", [""])[0] or "").strip().lower()
