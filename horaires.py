@@ -168,13 +168,66 @@ MOTS_TYPE = [
     ("Stage", ("stage", "stagiaire")),
     ("TFE", ("tfe", "mémoire", "travail de fin")),
     ("TP", ("tp", "groupes tp", "labo", "pratique", "atelier")),
+    # « exercice cot/côte » avant « exercice » : séance d'exercices notée,
+    # type officiel UMONS (« Exercice coté », orthographié parfois « côte »)
+    ("Exercices cotés", ("exercice cot", "exercices cot", "exercice côte", "exercices côté", "exercices côté")),
     ("Exercices", ("exercice",)),
     ("Tutorat", ("tutorat",)),
     ("Séminaire", ("séminaire", "seminaire", "workshop")),
     ("Conférence", ("conférence", "conference", "débat", "debat", "colloque")),
     ("Réunion", ("réunion", "reunion", "consultation")),
 ]
+
+# Labels explicites UMONS (lignes « Type : … » des descriptions iCal) :
+# normalisation vers nos libellés canoniques (pluriel, variantes d'ortographe).
+TYPES_UMONS = {
+    "cours": "Cours",
+    "cours/exercic": "Cours/Exercices",
+    "cours/exercices": "Cours/Exercices",
+    "exercice": "Exercices",
+    "exercices": "Exercices",
+    "interrogation": "Examen",
+    "épreuve pratique": "Examen",
+    "ep.pratique": "Examen",
+    "remédiation": "Remédiation",
+    "atelier": "TP",
+    "ateliers": "TP",
+    "exercice coté": "Exercices cotés",
+    "exercices coté": "Exercices cotés",
+    "exercice côté": "Exercices cotés",
+    "exercices cotés": "Exercices cotés",
+    "test": "Examen",
+    "examen": "Examen",
+    "examen écrit": "Examen",
+    "examen oral": "Examen",
+    "travaux pratiques": "TP",
+    "tp": "TP",
+    "projet": "Projet",
+    "séminaire": "Séminaire",
+    "conférence": "Conférence",
+    "réunion": "Réunion",
+    "q-r": "Réunion",
+    "qr": "Réunion",
+    "visite": "Visite",
+    "voyage": "Voyage",
+    "a distance": "À distance",
+    "autre": "Autre",
+}
 RE_CODE = re.compile(r"\b[A-Z]{1,4}-[A-Z0-9]{2,5}-\d{3}\b")
+
+
+def normaliser_type_umons(brut: str) -> str:
+    """Normalise un label « Type : … » d'UMONS (souvent tronqué à 10 caractères,
+    ex. « Remédiatio », « Interrogatio », « Cours/Exercic ») vers un libellé
+    canonique."""
+    clef = brut.strip().lower()
+    if clef in TYPES_UMONS:
+        return TYPES_UMONS[clef]
+    if len(clef) >= 4:
+        for c, canonique in TYPES_UMONS.items():
+            if c.startswith(clef):
+                return canonique
+    return brut[:1].upper() + brut[1:]
 
 
 def analyser_cours(matiere: str = "", description: str = "") -> dict:
@@ -194,12 +247,21 @@ def analyser_cours(matiere: str = "", description: str = "") -> dict:
             infos["code"] = valeur.strip()
         elif cle in ("enseignant", "enseignants", "prof", "profs", "titulaire"):
             infos["enseignants"] += valeurs
+        elif cle in ("type", "types", "type d'activité"):
+            # label officiel UMONS (ex. « Exercice coté ») : source la plus fiable
+            brut = valeur.strip().rstrip("\\n").replace("<br/>", "").replace("<br>", "").strip()
+            if brut:
+                infos["type_explicite"] = brut
     recherche = (infos["intitule"] + " " + (matiere or "")).strip()
+    explicite = infos.pop("type_explicite", "")
+    if explicite:
+        infos["type"] = normaliser_type_umons(explicite)
     if recherche and not infos["code"]:
         trouve = RE_CODE.search(recherche)
         if trouve:
             infos["code"] = trouve.group(0)
-    if recherche:
+    if recherche and not explicite:
+        # détection par mots-clés uniquement sans label explicite UMONS
         tout = recherche.lower()
         for titre, mots in MOTS_TYPE:
             if any(mot in tout for mot in mots):
