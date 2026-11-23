@@ -67,19 +67,20 @@ Les types **Examen** (écrit ou oral) et **Exercices cotés** portent une
 étiquette rouge en bas de case (centrée) ; le type étant affiché au bas de la
 case, les metadonnées utiles restent lisibles au-dessus.
 
-## Préférences mémorisées (cookies)
+## Écran d'entrée : choix de la formation et du groupe (cookies)
 
-À la première visite, un écran d'accueil demande la **formation** et le
-**groupe de TP** (optionnel) ; le choix est enregistré dans des cookies
-(`hp_categorie`, `hp_ressource`, `hp_groupe`, validité 1 an) et réappliqué
-automatiquement à chaque ouverture de la page. Si la formation choisie
-disparaît du catalogue, l'écran d'accueil se rouvre. Le bouton **Passer**
-permet de ne rien mémoriser (tout l'horaire s'affiche alors). Les boutons de
-la page restent utilisables à tout moment ; choisir une autre formation ne
-réécrit le cookie qu'en passant par l'accueil.
+Avant d'arriver sur la grille horaire, la page ouvre un **écran de choix** :
+d'abord la **formation**, puis (si la formation a des groupes de TP) le
+**groupe**. Deux boutons : **Enregistrer et afficher** (choix mémorisé dans
+des cookies `hp_categorie`, `hp_ressource`, `hp_groupe`, validité 1 an) et
+**Tout afficher** (grille complète, sans mémorisation).
 
-👉 Astuce : pour retrouver l'écran d'accueil, effacez les cookies `hp_*` du
-site (ou utilisez une fenêtre privée).
+À la visite suivante, **plus aucun écran de choix** : la page s'ouvre
+directement sur l'horaire personnel (sélecteurs posés + semaine courante).
+Si la formation mémorisée a disparu du catalogue, l'écran de choix se
+rouvre. Tant que l'écran de choix est affiché, l'en-tête et la grille sont
+masqués — rien ne se charge superflu avant la décision. Pour retrouver
+l'écran de choix, effacez les cookies `hp_*` du site.
 
 ## Mémo des cours
 

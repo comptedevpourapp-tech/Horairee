@@ -58,6 +58,8 @@
   .marqueur::before { content: ""; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: #cc2427; }
   #message { padding: 20px; text-align: center; color: #777; }
   #voile { position: fixed; inset: 0; background: #0007; display: none; z-index: 60; }
+  #voile.plein { background: #f5f7fb; }
+  body.choix header, body.choix main { display: none; }
   #fiche { position: fixed; z-index: 61; top: 50%; left: 50%; transform: translate(-50%, -50%);
            background: #fff; border-radius: 10px; max-width: 520px; width: calc(100% - 30px);
            max-height: 85vh; overflow: auto; padding: 18px 22px; display: none; box-shadow: 0 10px 40px #0006; }
@@ -70,6 +72,7 @@
   #accueil { position: fixed; z-index: 62; top: 50%; left: 50%; transform: translate(-50%, -50%);
              background: #fff; border-radius: 10px; max-width: 460px; width: calc(100% - 30px);
              padding: 20px 24px; display: none; box-shadow: 0 10px 40px #0006; }
+  body.choix #accueil { box-shadow: none; }
   #accueil h2 { margin: 0 0 6px; font-size: 18px; }
   #accueil label { display: block; font-size: 12px; color: #666; margin: 12px 0 4px; text-transform: uppercase; }
   #accueil select { width: 100%; padding: 7px; border: 1px solid #ccd; border-radius: 6px; font-size: 14px; background: #fff; }
@@ -471,7 +474,10 @@ function fermerFiche() {
   document.getElementById("voile").style.display = "none";
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape") fermerFiche(); });
-document.getElementById("voile").onclick = () => { document.getElementById("accueil").style.display = "none"; fermerFiche(); };
+document.getElementById("voile").onclick = () => {
+  if ((document.body || {}).classList && document.body.classList.contains("choix")) return;  // écran de choix obligatoire
+  document.getElementById("accueil").style.display = "none"; fermerFiche();
+};
 
 document.getElementById("categorie").onchange = () => {
   const type = document.getElementById("categorie").value;
@@ -518,7 +524,9 @@ document.getElementById("fluxRaz").onclick = () => {
 
 document.getElementById("flux").value = lireFlux();
 
-// ---------- Préférences utilisateur (cookies) : formation + groupe ----------
+// ---------- Écran de choix : formation + groupe, mémorisé en cookies ----------
+// Deux écrans : sans cookie, la page de choix est affichée SEULE (l'horaire
+// est masqué) ; avec cookie, atterrissage direct sur le bon horaire.
 const JOURS_COOKIE = 365;
 function ecrireCookie(nom, valeur) {
   try {
@@ -563,16 +571,27 @@ async function appliquerPreference(pref) {
   return true;
 }
 
+function classeChoix(on) {
+  try { document.body.classList.toggle("choix", !!on); } catch (e) {}
+}
+function montrerHoraires() {
+  classeChoix(false);
+  document.getElementById("accueil").style.display = "none";
+  const v = document.getElementById("voile");
+  v.classList.remove("plein");
+  v.style.display = "none";
+}
 async function ouvrirAccueil(pref) {
-  // premier écran : choix formation + groupe, mémorisé dans les cookies
+  // écran d'entrée : choix formation + groupe, mémorisé dans les cookies ;
+  // en mode « choix » (body.choix) l'en-tête et la grille sont masqués
+  classeChoix(true);
   const box = document.getElementById("accueil");
-  const voile = document.getElementById("voile");
   box.innerHTML =
     "<h2>Bienvenue sur votre emploi du temps UMONS</h2>" +
-    "<p style='font-size:13px;color:#555;margin:4px 0 2px'>Choisissez votre formation (et au besoin votre groupe de TP) ; l'information est mémorisée dans les cookies et reste sélectionnée à chaque visite.</p>" +
+    "<p style='font-size:13px;color:#555;margin:4px 0 2px'>Choisissez votre formation (et au besoin votre groupe de TP) ; l'information est mémorisée dans les cookies et votre horaire s'ouvrira automatiquement aux prochaines visites.</p>" +
     "<label>Formation</label><select id='accFormation'></select>" +
     "<label>Groupe (TP)</label><select id='accGroupe'><option value=''>Tous les groupes</option></select>" +
-    "<div class='boutons'><button id='accPasser' class='second'>Passer</button><button id='accOk'>Enregistrer et afficher</button></div>";
+    "<div class='boutons'><button id='accTout' class='second'>Tout afficher</button><button id='accOk'>Enregistrer et afficher</button></div>";
   const selF = box.querySelector("#accFormation");
   for (const f of (catalogue.formations || [])) {
     const o = document.createElement("option"); o.value = f.valeur; o.textContent = f.affichage; selF.appendChild(o);
@@ -594,34 +613,47 @@ async function ouvrirAccueil(pref) {
   await majGroupesAccueil();
   selF.onchange = async () => { if (pref) pref.groupe = ""; await majGroupesAccueil(); };
   box.style.display = "block";
-  voile.style.display = "block";
-  box.querySelector("#accOk").onclick = () => {
-    ecrireCookie("hp_categorie", "formations");
-    ecrireCookie("hp_ressource", selF.value);
-    ecrireCookie("hp_groupe", selG.value);
-    box.style.display = "none";
-    voile.style.display = "none";
-    appliquerPreference({ categorie: "formations", ressource: selF.value, groupe: selG.value }).then(() => charger());
+  const v = document.getElementById("voile");
+  v.classList.add("plein");
+  v.style.display = "block";
+  const lancer = (memoriser) => {
+    if (memoriser) {
+      ecrireCookie("hp_categorie", "formations");
+      ecrireCookie("hp_ressource", selF.value);
+      ecrireCookie("hp_groupe", selG.value);
+    }
+    montrerHoraires();
+    appliquerPreference({ categorie: "formations", ressource: selF.value, groupe: selG.value })
+      .then(() => charger());
   };
-  box.querySelector("#accPasser").onclick = () => { box.style.display = "none"; voile.style.display = "none"; };
+  box.querySelector("#accOk").onclick = () => lancer(true);
+  box.querySelector("#accTout").onclick = () => lancer(false);
 }
 
 (async () => {
   chargerRessources();
-  // le catalogue (formations/salles/groupes) arrive via /api/ressources :
-  // attendre son arrivée avant d'appliquer la préférence ou d'ouvrir l'accueil
-  const t0c = Date.now();
-  while (!(catalogue.formations || []).length && Date.now() - t0c < 30000)
-    await new Promise(r => setTimeout(r, 300));
+  // le catalogue (formations/salles/groupes) arrive via /api/ressources
+  const attendreCatalogue = async () => {
+    const t0 = Date.now();
+    while (!(catalogue.formations || []).length && Date.now() - t0 < 30000)
+      await new Promise(r => setTimeout(r, 300));
+  };
   const pref = lirePreference();
   if (pref) {
+    // visite suivante : atterrissage direct sur le bon horaire (pas d'écran
+    // de choix), la grille reste masquée jusqu'à ce que la sélection soit posée
+    await attendreCatalogue();
     const ok = await appliquerPreference(pref);
-    charger();
-    if (!ok) ouvrirAccueil(null); // ressource disparue du catalogue : redemander
-  } else {
-    charger();                    // affiche tout pendant que l'utilisateur choisit
-    ouvrirAccueil(null);
+    if (ok) {
+      montrerHoraires();
+      charger();
+      return;
+    }
+    document.getElementById("accueil").innerHTML = "";   // ressource disparue
   }
+  // première visite (ou préférence invalide) : page de choix obligatoire
+  await attendreCatalogue();
+  await ouvrirAccueil(pref);
 })();
 </script>
 </body>
