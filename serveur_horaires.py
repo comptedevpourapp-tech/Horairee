@@ -71,9 +71,24 @@ VERROU_ANNUEL = threading.Lock()
 # « RuntimeError: dictionary changed size during iteration » (HTTP 500).
 VERROU_ARCHIVE = threading.RLock()
 ANNUEL_PRET = False            # True après la première passe annuelle complète
+ANNUEL_GROUPES_PRET = False    # True après la première passe des groupes complète
+
+# Liste complète des cours (archive + live + flux annuels de formations et de
+# groupes) reconstruite en mémoire dès que la moindre source change ; les
+# requêtes utilisateur filtrent UNIQUEMENT cette liste : zéro requête réseau
+# sur le chemin d'affichage, donc réponse quasi instantanée.
+VERSION_MEMOIRE = 0            # incrémenté à chaque changement d'une source
+LISTE_MEMOIRE = {"version": -1, "evenements": []}
 
 PREFIXE_COURS = re.compile(r"^Cours-(\d+)-(\d+)-")
 CHEVRONS_GROUPE = re.compile(r"<[^<>]*>")
+
+
+def marquer_memoire():
+    """Signale que le pool de cours a changé : la liste complète sera
+    reconstruite à la prochaine requête (au lieu d'être refaite à chaque fois)."""
+    global VERSION_MEMOIRE
+    VERSION_MEMOIRE += 1
 
 
 def libelle_court_td(td):
@@ -296,6 +311,58 @@ def enregistrer_dans_archive(evenements):
                 modifie = True
         if modifie or not FICHIER_ARCHIVE.exists():
             sauver_archive()
+        marquer_memoire()
+
+
+def liste_complete():
+    """Pool complet en mémoire : archive + fenêtre live + flux annuels de
+    formations et de groupes déjà rassemblés. Reconstruite seulement quand une
+    source a changé (marquer_memoire) — les requêtes utilisateur filtrent cette
+    liste sans AUCUNE requête réseau, d'où la fluidité."""
+    if LISTE_MEMOIRE["version"] == VERSION_MEMOIRE:
+        return LISTE_MEMOIRE["evenements"]
+    with VERROU_ANNUEL:
+        annuels = [e["evenements"] for e in ANNUEL_MEMOIRE.values()]
+        groupes_m = [e["evenements"] for e in GROUPES_MEMOIRE.values()]
+    paires = [
+        ("archive", evenements_archive()),
+        ("live", list(CACHE["evenements"])),
+        ("annuel", [e for lot in annuels for e in lot]),
+        ("annuel", [e for lot in groupes_m for e in lot]),
+    ]
+    fusion = fusionner_sources(paires)
+    LISTE_MEMOIRE["version"] = VERSION_MEMOIRE
+    LISTE_MEMOIRE["evenements"] = fusion
+    return fusion
+
+
+def amorcer_memoire():
+    """Après un redémarrage, recharge la mémoire de cours depuis l'archive
+    persistée au lieu de retélécharger les ~1 300 flux : le serveur redémarre
+    « chaud ». Les entrées amorcées orientent leur TTL pour être rafraîchies
+    au prochain cycle (moitié de l'intervalle)."""
+    if not ARCHIVE:
+        return
+    eve = evenements_archive()
+    formes = set(CATALOGUE_ANNUEL)
+    par_formation = {}
+    par_groupe = {}
+    for e in eve:
+        for f in e.get("formations") or []:
+            if f in formes or ("." + f.lstrip(".")) in formes:
+                par_formation.setdefault(f, []).append(e)
+                for g in e.get("groupes") or []:
+                    if g:
+                        par_groupe.setdefault(f + "\x00" + g, []).append(e)
+    quart = INTERVALLE_ANNUEL / 2
+    with VERROU_ANNUEL:
+        for ressource, evs in par_formation.items():
+            ANNUEL_MEMOIRE.setdefault(ressource, {"quand": time.time() - quart, "evenements": list(evs)})
+        for cle, evs in par_groupe.items():
+            GROUPES_MEMOIRE.setdefault(cle, {"quand": time.time() - quart, "evenements": list(evs)})
+    marquer_memoire()
+    print(f"Mémoire amorcée depuis l'archive : {len(par_formation)} formations, "
+          f"{len(par_groupe)} couples formation/groupe.", file=sys.stderr)
 
 
 def obtenir_annuel(ressource):
@@ -355,6 +422,7 @@ def obtenir_annuel(ressource):
                     e["groupes"] += [g for g in (nettoyage_groupe(v) for v in valeurs) if g]
         enregistrer_dans_archive(evenements)
         ANNUEL_MEMOIRE[ressource] = {"quand": maint, "evenements": evenements}
+        marquer_memoire()
         return evenements
 
 
@@ -428,20 +496,27 @@ def obtenir_annuel_groupe(ressource, groupe):
                     e["groupes"] += [g for g in (nettoyage_groupe(v) for v in valeurs) if g]
         enregistrer_dans_archive(evenements)
         GROUPES_MEMOIRE[cle] = {"quand": maint, "evenements": evenements}
+        marquer_memoire()
         return evenements
 
 
 def boucle_annuel():
-    """En arrière-plan : télécharge les flux annuels de toutes les formations
-    du catalogue et les fusionne dans l'archive (cycle HP_ANNUEL_HEURES)."""
+    """En arrière-plan : télécharge TOUT (flux annuels de toutes les formations
+    PUIS de tous les groupes de TD) et fusionne dans la mémoire + l'archive,
+    cycle HP_ANNUEL_HEURES. Les requêtes utilisateur ne téléchargent jamais :
+    elles filtrent le pool déjà en mémoire (liste_complete)."""
     def tour():
-        global ANNUEL_PRET
+        global ANNUEL_PRET, ANNUEL_GROUPES_PRET
         time.sleep(DELAI_BOUCLE_ANNUEL)
         while True:
             debut_passe = time.time()
             total = len(CATALOGUE_ANNUEL)
             reussis = 0
             for indice, ressource in enumerate(list(CATALOGUE_ANNUEL), 1):
+                entree = ANNUEL_MEMOIRE.get(ressource)
+                if entree and time.time() - entree["quand"] < INTERVALLE_ANNUEL:
+                    reussis += 1
+                    continue                 # encore frais : rien à télécharger
                 try:
                     obtenir_annuel(ressource)
                     if ressource in ANNUEL_MEMOIRE:
@@ -454,9 +529,33 @@ def boucle_annuel():
                 time.sleep(DELAIS_ANNUEL)
             if total == 0 or len(ANNUEL_MEMOIRE) >= total / 2:
                 ANNUEL_PRET = True
-            print(f"Passe annuelle terminée : {reussis}/{total} flux intégrés en "
-                  f"{time.time() - debut_passe:.0f} s. Archive : {len(ARCHIVE)} cours.",
+            print(f"Passe annuelle (formations) terminée : {reussis}/{total} "
+                  f"intégrés en {time.time() - debut_passe:.0f} s. Archive : {len(ARCHIVE)} cours.",
                   file=sys.stderr)
+            # passe des groupes : les flux iCal annuels de chaque TD (TP…),
+            # pour que la sélection d'un groupe soit purement en mémoire
+            total_g = sum(len(tds) for tds in CATALOGUE_GROUPES.values())
+            fait_g = 0
+            debut_groupes = time.time()
+            for ressource, tds in list(CATALOGUE_GROUPES.items()):
+                for groupe in list(tds):
+                    cle = ressource + "\x00" + groupe
+                    entree = GROUPES_MEMOIRE.get(cle)
+                    if entree and time.time() - entree["quand"] < INTERVALLE_ANNUEL:
+                        fait_g += 1
+                        continue
+                    try:
+                        obtenir_annuel_groupe(ressource, groupe)
+                    except Exception:
+                        traceback.print_exc(file=sys.stderr)
+                    fait_g += 1
+                    if fait_g % 50 == 0:
+                        print(f"Passe groupes : {fait_g}/{total_g} TD traités "
+                              f"(en cours {time.time() - debut_groupes:.0f} s)…", file=sys.stderr)
+                    time.sleep(DELAIS_ANNUEL)
+            ANNUEL_GROUPES_PRET = True
+            print(f"Passe annuelle complète (groupes inclus) : {fait_g}/{total_g} groupes, "
+                  f"{time.time() - debut_passe:.0f} s au total.", file=sys.stderr)
             time.sleep(max(INTERVALLE_ANNUEL, 3600))
     fil = threading.Thread(target=tour, daemon=True, name="annuel")
     fil.start()
@@ -549,6 +648,7 @@ def obtenir_donnees(url_ics: str, autoriser_cache=True):
                 e["groupes"] += [g for g in (nettoyage_groupe(v) for v in valeurs) if g]
     CACHE.update(url=url_ics, quand=maintenant, evenements=evenements,
                  ressources=classer_champs(evenements))
+    marquer_memoire()
     return evenements, CACHE["ressources"]
 
 
@@ -672,8 +772,7 @@ class Controleur(BaseHTTPRequestHandler):
                 self._envoyer(200, json.dumps({"version": VERSION_CODE}), "application/json")
             elif analyse.path == "/api/semaines":
                 compte = {}
-                for e in fusionner_sources([("archive", evenements_archive()),
-                                            ("live", list(CACHE["evenements"]))]):
+                for e in liste_complete():
                     d = e["debut"].astimezone(horaires.TZ_LOCAL).date()
                     lundi = (d - timedelta(days=d.weekday())).isoformat()
                     compte[lundi] = compte.get(lundi, 0) + 1
@@ -686,21 +785,48 @@ class Controleur(BaseHTTPRequestHandler):
                     "annuel_pret": ANNUEL_PRET,
                 }, ensure_ascii=False), "application/json")
             elif analyse.path == "/api/ressources":
-                url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
-                if not url_autorisee(url_ics):
-                    self._envoyer(400, json.dumps({"erreur": "URL iCal non autorisée (hôte HyperPlanning attendu)."}), "application/json")
-                    return
-                try:
-                    _, ressources = obtenir_donnees(url_ics)
-                except Exception as err:
-                    # si HyperPlanning est injoignable, servir quand même le catalogue de l'archive
-                    print(f"Ressources live indisponibles ({err}) — repli archive.", file=sys.stderr)
-                    ressources = classer_champs(evenements_archive())
+                url_explicite = (params.get("url", [""])[0] or "").strip()
+                if url_explicite:
+                    if not url_autorisee(url_explicite):
+                        self._envoyer(400, json.dumps({"erreur": "URL iCal non autorisée (hôte HyperPlanning attendu)."}), "application/json")
+                        return
+                    try:
+                        _, ressources = obtenir_donnees(url_explicite)
+                    except Exception as err:
+                        # si HyperPlanning est injoignable, servir quand même le catalogue de l'archive
+                        print(f"Ressources live indisponibles ({err}) — repli archive.", file=sys.stderr)
+                        ressources = classer_champs(evenements_archive())
                 type_ressource = (params.get("type", [""])[0] or "").strip().lower()
                 ressource = (params.get("ressource", [""])[0] or "").strip()
                 groupes = {}
-                sources_cat = list(CACHE["evenements"]) + evenements_archive()
-                if type_ressource == "formation" and ressource:
+                # MODE MÉMOIRE : catalogue servi depuis le pool complet en
+                # mémoire — aucun téléchargement au chargement de la page
+                eve_mem = liste_complete()
+                if not url_explicite:
+                    if eve_mem:
+                        ressources = classer_champs(eve_mem)
+                        sources_cat = eve_mem
+                    else:
+                        # Premier démarrage sans archive : replis live/archive
+                        try:
+                            _, ressources = obtenir_donnees(os.environ.get("HP_URL", horaires.URL_SALLES))
+                            sources_cat = list(CACHE["evenements"]) + evenements_archive()
+                        except Exception as err:
+                            print(f"Ressources live indisponibles ({err}) — repli archive.", file=sys.stderr)
+                            ressources = classer_champs(evenements_archive())
+                            sources_cat = eve_mem
+                else:
+                    sources_cat = list(CACHE["evenements"]) + evenements_archive()
+                if type_ressource == "formation" and ressource and not url_explicite:
+                    # groupes exprimés dans les descriptions des flux annuels :
+                    # d'abord le pool mémoire, puis repli à la demande tant que
+                    # la passe de fond n'a pas encore traité cette formation
+                    if not ANNUEL_PRET and ressource in CATALOGUE_ANNUEL and ressource not in ANNUEL_MEMOIRE:
+                        try:
+                            sources_cat = sources_cat + obtenir_annuel(ressource)
+                        except Exception:
+                            traceback.print_exc(file=sys.stderr)
+                elif type_ressource == "formation" and ressource:
                     try:
                         sources_cat = sources_cat + obtenir_annuel(ressource)
                     except Exception:
@@ -738,39 +864,48 @@ class Controleur(BaseHTTPRequestHandler):
                                 for v, a in sorted(groupes.items(), key=lambda kv: kv[0].lower())],
                 }, ensure_ascii=False), "application/json")
             elif analyse.path == "/api/horaires":
-                url_ics = params.get("url", [os.environ.get("HP_URL", horaires.URL_SALLES)])[0] or horaires.URL_SALLES
-                if not url_autorisee(url_ics):
-                    self._envoyer(400, json.dumps({"erreur": "URL iCal non autorisée (hôte HyperPlanning attendu)."}), "application/json")
-                    return
-                try:
-                    evenements_bruts, _ = obtenir_donnees(url_ics)
-                    source = "live"
-                except Exception as err:
-                    print(f"Téléchargement impossible ({err}); repli sur l'archive.", file=sys.stderr)
-                    evenements_bruts = []
-                    source = "archive"
-
                 type_ressource = (params.get("type", [""])[0] or "").strip().lower()
                 ressource = (params.get("ressource", [""])[0] or "").strip()
-
-                evenements_annuels = []
-                if CATALOGUE_ANNUEL and type_ressource == "formation" and ressource:
-                    try:
-                        evenements_annuels = obtenir_annuel(ressource)
-                    except Exception:
-                        traceback.print_exc(file=sys.stderr)
                 valeur_groupe = (params.get("groupe", [""])[0] or "").strip()
-                if valeur_groupe and type_ressource == "formation" and ressource and CATALOGUE_GROUPES:
-                    # les cours propres au groupe (TP...) viennent du flux iCal annuel du TD
+                url_explicite = (params.get("url", [""])[0] or "").strip()
+                if url_explicite:
+                    # flux de secours fourni par la page : téléchargement direct
+                    if not url_autorisee(url_explicite):
+                        self._envoyer(400, json.dumps({"erreur": "URL iCal non autorisée (hôte HyperPlanning attendu)."}), "application/json")
+                        return
                     try:
-                        evenements_annuels = evenements_annuels + obtenir_annuel_groupe(ressource, valeur_groupe)
-                    except Exception:
-                        traceback.print_exc(file=sys.stderr)
-
-                evenements = fusionner_sources([
-                    ("archive", evenements_archive()), ("live", evenements_bruts),
-                    ("annuel", evenements_annuels),
-                ])
+                        evenements_bruts, _ = obtenir_donnees(url_explicite)
+                    except Exception as err:
+                        print(f"Téléchargement impossible ({err}); repli sur l'archive.", file=sys.stderr)
+                        evenements_bruts = []
+                    with VERROU_ANNUEL:
+                        annuels_mem = [e for e2 in ANNUEL_MEMOIRE.values() for e in e2["evenements"]]
+                    evenements = fusionner_sources(
+                        [("annuel", annuels_mem), ("live", evenements_bruts)]
+                        + ([("archive", evenements_archive())] if not evenements_bruts else []))
+                else:
+                    # MODE MÉMOIRE : tout a été récupéré par les passes de fond.
+                    # Aucune requête réseau ici — réponse quasi instantanée.
+                    complements = []
+                    if type_ressource == "formation" and ressource:
+                        with VERROU_ANNUEL:
+                            a_annuel = ressource in ANNUEL_MEMOIRE
+                            a_groupe = (ressource + "\x00" + valeur_groupe) in GROUPES_MEMOIRE if valeur_groupe else True
+                        # replis uniquement tant que les passes de fond ne sont
+                        # pas terminées (ou pour une ressource non couverte)
+                        if CATALOGUE_ANNUEL and not a_annuel and ressource in CATALOGUE_ANNUEL and not ANNUEL_PRET:
+                            try:
+                                complements += obtenir_annuel(ressource)
+                            except Exception:
+                                traceback.print_exc(file=sys.stderr)
+                        if valeur_groupe and CATALOGUE_GROUPES and not a_groupe and not ANNUEL_GROUPES_PRET:
+                            try:
+                                complements += obtenir_annuel_groupe(ressource, valeur_groupe)
+                            except Exception:
+                                traceback.print_exc(file=sys.stderr)
+                    evenements = liste_complete()
+                    if complements:
+                        evenements = fusionner_sources([("annuel", complements), ("memoire", evenements)])
 
                 lundi = None
                 brut = params.get("semaine", [""])[0]
@@ -814,17 +949,31 @@ class Controleur(BaseHTTPRequestHandler):
                     selection.append(e)
                 selection.sort(key=lambda e: e["debut"])
 
-                if evenements_bruts:
-                    fenetre = {
-                        "debut": min(e["debut"] for e in evenements_bruts).date().isoformat(),
-                        "fin": max(e["fin"] for e in evenements_bruts).date().isoformat(),
-                    }
+                if url_explicite:
+                    # flux de secours fourni par la page : fenêtre de publication live
+                    if evenements_bruts:
+                        fenetre = {
+                            "debut": min(e["debut"] for e in evenements_bruts).date().isoformat(),
+                            "fin": max(e["fin"] for e in evenements_bruts).date().isoformat(),
+                        }
+                    else:
+                        fenetre = None
+                else:
+                    # mode mémoire : la fenêtre de couverture est celle du pool
+                    # complet (l'année entière une fois la passe de fond finie)
+                    if evenements:
+                        fenetre = {
+                            "debut": min(e["debut"] for e in evenements).date().isoformat(),
+                            "fin": max(e["fin"] for e in evenements).date().isoformat(),
+                        }
+                    else:
+                        fenetre = None
+                if fenetre:
                     debut_semaine = lundi.date()
                     fin_semaine = (dimanche - timedelta(days=1)).date()
                     hors_fenetre = (fin_semaine < datetime.fromisoformat(fenetre["debut"]).date()
                                     or debut_semaine > datetime.fromisoformat(fenetre["fin"]).date())
                 else:
-                    fenetre = None
                     hors_fenetre = True
                 if not selection:
                     source = "vide"
@@ -870,6 +1019,9 @@ def main(argv=None):
     charger_archive()
     charger_catalogue_annuel()
     charger_catalogue_groupes()
+    # redémarrage " chaud " : la mémoire part de l'archive persistée, aucune
+    # attente de réseau pour servir les premières requêtes
+    amorcer_memoire()
     global ANNUEL_PRET
     if INTERVALLE_ANNUEL > 0 and CATALOGUE_ANNUEL:
         boucle_annuel()

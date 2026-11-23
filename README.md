@@ -97,8 +97,33 @@ cette limite ont été contournés :
    un cours publié à la fois dans l'export « toutes salles » et dans le flux
    annuel n'apparaît qu'une fois, avec la description la plus riche (code,
    type) et les formations des deux sources.
-3. **À la demande** : sélectionner une formation hors fenêtre télécharge
-   immédiatement son flux annuel (badge « 📅 année complète » dans la page).
+3. **À la demande** : tant que la passe de fond n'a pas encore traité une
+   ressource, la sélectionner déclenche son flux annuel immédiatement (badge
+   « 📅 année complète » dans la page) — une fois la passe terminée, tout
+   est déjà en mémoire, cf. ci-dessous.
+
+### Architecture : tout en mémoire, l'utilisateur ne reçoit que sa part
+
+Le serveur fonctionne en **mode mémoire** :
+
+1. Au démarrage, la mémoire est **amorcée depuis l'archive persistée**
+   (`amorcer_memoire()`) — le serveur redémarre « chaud », sans attendre le
+   réseau.
+2. En arrière-plan, la passe annuelle télécharge **tout** : les 234 flux annuels
+   de formations **puis** les ~1 159 flux annuels de groupes de TD, et fusionne
+   chaque flux dans l'archive (dédoublonnage par cours). C'est le seul endroit
+   où le serveur communique avec UMONS, avec politesse (0,4 s entre flux).
+3. Chaque requête utilisateur (`/api/horaires`, `/api/ressources`,
+   `/api/semaines`) **ne télécharge rien** : elle filtre simplement le pool
+   complet en mémoire (`liste_complete()`, reconstruit seulement quand une
+   source a changé) et renvoie **uniquement les cours de la sélection**
+   (formation + groupe + semaine + filtre). Mesuré : ~30 ms par réponse ;
+   l'utilisateur qui choisit « BAB civil + groupe B » reçoit exactement ses
+   cours, rien d'autre.
+4. La fenêtre live « toutes salles » (~3 semaines) reste capturée toutes les
+   2 h (`CAPTURE_HEURES`) pour garder les semaines courantes fraîches ; le
+   champ « Secours flux iCal » conserve son comportement direct (téléchargé à
+   la demande, dédoublonné contre la mémoire).
 
 ### Groupes de TP (TD) — ex. « BAB civil - B »
 
@@ -127,9 +152,13 @@ glissante, de septembre 2026 à juillet 2027.
 
 ### Après un redémarrage du conteneur
 
-La passe annuelle de fond démarre ~30 s après le lancement et met environ
-2 à 4 minutes à intégrer les 234 flux (progression affichée dans les
- journaux du conteneur : « Passe annuelle : 25/234… »). Pendant ce temps,
+Au démarrage la mémoire est amorcée depuis l'archive persistée (les semaines
+déjà connues sont servies immédiatement). La passe annuelle de fond démarre
+~30 s après le lancement : ~1 minute pour les 234 formations, puis 15 à
+20 minutes pour les ~1 159 groupes de TD (progression dans les journaux :
+« Passe annuelle : 25/234… », « Passe groupes : 50/1159… »). Empreinte
+typique : ~0,5 à 0,8 Go de RAM une fois l'année en mémoire (prévoir la
+limite de mémoire du conteneur TrueNAS en conséquence). Pendant ce temps,
 le bandeau 📂 de la page signale « Passe annuelle en cours » ; les semaines
 lointaines se remplissent au fur et à mesure, puis l'indicateur passe à
 `annuel_pret: true` (`/api/semaines`). Les horaires d'une formation
