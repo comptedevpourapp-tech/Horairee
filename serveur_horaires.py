@@ -196,13 +196,32 @@ def charger_catalogue_groupes():
     return catalogue
 
 
+def est_marqueur_journee(eve):
+    """Vrai pour un marqueur journée entière (Vacances/congé publié à 00:00
+    et terminant à 00:00, f-> souvent plusieurs jours plus tard)."""
+    try:
+        debut = eve["debut"].astimezone(horaires.TZ_LOCAL)
+        fin = eve["fin"].astimezone(horaires.TZ_LOCAL) if eve.get("fin") else None
+    except Exception:
+        return False
+    if fin is None or not eve.get("matiere"):
+        return False
+    return (debut.hour, debut.minute) == (0, 0) and (fin.hour, fin.minute) == (0, 0) \
+        and fin > debut and (fin.date() - debut.date()).days >= 1
+
+
 def cle_dedup(eve):
     """Un même cours apparaît avec des UID différents selon l'export
     (toutes salles vs flux par formation) mais partage le préfixe
-    Cours-<id>-<num>- . On dédoublonne sur (début, préfixe)."""
+    Cours-<id>-<num>- . On dédoublonne sur (début, préfixe).
+    Les marqueurs journée entière (Vacances…) ont des UID complètement
+    différents d'un flux à l'autre : on les rapproche par (début, fin, intitulé)."""
     debut = eve["debut"].astimezone(horaires.TZ_LOCAL).isoformat()
     m = PREFIXE_COURS.match(eve.get("uid") or "")
     suffixe = m.group(0) if m else (eve.get("uid") or "")
+    if est_marqueur_journee(eve):
+        fin = eve["fin"].astimezone(horaires.TZ_LOCAL).isoformat()
+        return "marqueur|" + debut + "|" + fin + "|" + eve.get("matiere", "").strip().lower()
     return debut + "|" + suffixe
 
 

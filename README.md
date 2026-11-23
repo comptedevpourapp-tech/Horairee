@@ -109,6 +109,15 @@ connexion vient de `/api/semaines`, qui accepte désormais les mêmes filtres
 que `/api/horaires` (`type`, `ressource`, `groupe`, `filtre`) et compte les
 cours par semaine pour la sélection demandée.
 
+## Congés et vacances dans l'horaire
+
+UMONS publie parfois des marqueurs journée entière (« Vacances », « Férié »)
+sur des journées ou des périodes sans cours. Ils ne s'affichent pas comme des
+fausses cases de cours dans la grille : ils apparaissent sous forme de
+pastilles au-dessus de l'en-tête (ex. « 📌 Vacances : du 19/12/26 au
+04/01/27 »), quels que soient le fuseau du navigateur et le flux source
+(les doublons formateurs/groupe du même marqueur sont fusionnés).
+
 ## Année entière, automatiquement
 
 L'export public « toutes salles » est limité par UMONS à la fenêtre publiée

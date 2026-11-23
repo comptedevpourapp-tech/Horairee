@@ -28,6 +28,9 @@
                   box-shadow: 0 1px 3px #0002; display: flex; align-items: center; gap: 6px; }
   .legende-puce { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
   #grille { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px #0002; overflow: hidden; }
+  .horsJours { display: flex; flex-wrap: wrap; gap: 6px; padding: 7px 10px; border-bottom: 1px dashed #e3e3e3; }
+  .horsJour { font-size: 12px; background: #eef1f8; color: #44506a; border: 1px solid #d8deee;
+              border-radius: 6px; padding: 3px 9px; }
   .entete { display: grid; grid-template-columns: 52px repeat(7, 1fr); border-bottom: 2px solid #ddd; }
   .entete div { padding: 8px 4px; text-align: center; font-weight: bold; font-size: 13px; border-left: 1px solid #eee; }
   .entete div:first-child { border-left: none; }
@@ -328,8 +331,28 @@ function afficher(data) {
     jours[0].date.toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit"}) + " → " +
     jours[6].date.toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit", year:"2-digit"});
 
+  // Les marqueurs journée entière (Vacances, congés) ne sont pas des cours :
+  // ils sortent de la grille et deviennent des pastilles au-dessus de l'en-tête.
+  const journeeEntiere = (c) => c.fin && c.debut.slice(11, 16) === "00:00"
+    && c.fin.slice(11, 16) === "00:00" && (new Date(c.fin) - new Date(c.debut)) >= 86400000;
+  const grilleMarqueurs = [];
+  const parJour = [[], [], [], [], [], [], []];
+  for (const c of data.cours) {
+    if (journeeEntiere(c)) { grilleMarqueurs.push(c); continue; }
+    parJour[(new Date(c.debut).getDay() + 6) % 7].push(c);
+  }
+  const bandeMarqueurs = grilleMarqueurs.length
+    ? '<div class="horsJours">' + grilleMarqueurs.map(c => {
+        // formatage depuis la chaîne ISO (déjà en heure locale) : aucun décalage de fuseau
+        const fmt = (iso) => iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(2, 4);
+        return "<span class='horsJour'>📌 " + echapper(c.matiere) + " : du " + fmt(c.debut)
+             + " au " + fmt(c.fin) + "</span>";
+      }).join("") + "</div>"
+    : "";
+
   const grille = document.getElementById("grille");
   grille.innerHTML =
+    bandeMarqueurs +
     '<div class="entete"><div></div>' + jours.map(j => {
       const complet = j.date.toLocaleDateString("fr-BE", {day:"numeric", month:"long", year:"numeric"});
       const pose = fmtDate(j.date) === fmtDate(new Date()) ? " aujourdhui" : "";
@@ -352,9 +375,6 @@ function afficher(data) {
       col.appendChild(l);
     }
   }
-
-  const parJour = [[], [], [], [], [], [], []];
-  for (const c of data.cours) parJour[(new Date(c.debut).getDay() + 6) % 7].push(c);
 
   const legendes = new Map();
   let total = 0;
