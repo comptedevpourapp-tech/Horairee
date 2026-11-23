@@ -30,6 +30,7 @@ import sys
 import threading
 import time
 import traceback
+import unicodedata
 from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -89,6 +90,14 @@ def nettoyage_groupe(valeur):
     (ex. «&lt;.BAB2 - Ir. civil&gt;BAB2 - Ir Civil - B») ; on retire le
     préfixe pour garder un libellé propre et filtrable."""
     return CHEVRONS_GROUPE.sub("", valeur or "").strip()
+
+
+def forme_lemme(texte):
+    """Forme comparale : minuscules, sans accents, sans pluriel (pour ne pas
+    réafficher dans le mémo ce que l'étiquette de type montre déjà)."""
+    s = unicodedata.normalize("NFKD", (texte or "").lower())
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    return " ".join(t[:-1] if len(t) > 3 and t.endswith("s") else t for t in s.split())
 
 
 def retirer_suffixe_td(texte, groupe):
@@ -571,6 +580,14 @@ def evenements_en_json(evenements, groupe=""):
         intitule_propre = (e.get("intitule") or infos["intitule"]).split(" - <")[0].strip()
         if groupe:
             intitule_propre = retirer_suffixe_td(intitule_propre, groupe)
+        # mémo UMONS (« Mémo : Juste avant I-TRMI-034 »…) : nettoyé, sans
+        # doublon du type déjà affiché comme étiquette (comparaison sans
+        # accents ni pluriel : « Exercice coté » == « Exercices cotés »)
+        memo = nettoyage_groupe(e.get("memo") or infos.get("memo") or "")
+        if memo and (forme_lemme(memo) == forme_lemme(infos["type"] or "")
+                     or forme_lemme(memo) == forme_lemme(intitule_propre)):
+            # le mémo ne fait que répéter le type ou l'intitulé : inutile
+            memo = ""
         resultat.append({
             "debut": debut.isoformat(),
             "fin": fin.isoformat(),
@@ -583,6 +600,7 @@ def evenements_en_json(evenements, groupe=""):
             "groupes": e.get("groupes") or [],
             "code": e.get("code") or infos["code"],
             "intitule": intitule_propre or e.get("intitule", ""),
+            "memo": memo,
             "enseignants": e.get("enseignants") or infos["enseignants"],
             # type toujours recalculé à l'affichage : guérit les entrées
             # archivées avant l'extension des types (Projet, TFE, Tutorat…)

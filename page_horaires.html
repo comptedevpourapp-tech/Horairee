@@ -51,6 +51,9 @@
   .cours .h { color: #444; }
   .cours .salle { color: #222; font-weight: bold; }
   .cours .ens { color: #555; font-style: italic; }
+  .cours .memo { display: block; font-size: 9px; font-style: italic; color: #4a3a00;
+                 background: #fff3c4aa; border-radius: 3px; padding: 0 4px;
+                 max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .marqueur { position: absolute; height: 2px; background: #cc2427; z-index: 6; pointer-events: none; }
   .marqueur::before { content: ""; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: #cc2427; }
   #message { padding: 20px; text-align: center; color: #777; }
@@ -371,6 +374,7 @@ function afficher(data) {
         (c.duree_min ? ' <span class="h">(' + dureeTexte(c) + ")</span>" : "") +
         (c.salle ? '<span class="salle"> ' + echapper(c.salle.split(",")[0]) + "</span>" : "") +
         (ens ? '<span class="ens"> ' + echapper(ens) + "</span>" : "") +
+        (c.memo ? '<span class="memo">📝 ' + echapper(c.memo) + "</span>" : "") +
         '<span class="typeBas' + (repere ? " repere" : "") + '">' + echapper(c.type || "Cours") + "</span>";
       el.onclick = () => montrerFiche(c, intitule);
       colonnes[j].appendChild(el);
@@ -442,6 +446,7 @@ function montrerFiche(c, intitule) {
     "<dt>Date</dt><dd>" + new Date(c.debut).toLocaleDateString("fr-BE", {weekday:"long", day:"numeric", month:"long", year:"numeric"}) + "</dd>" +
     "<dt>Local</dt><dd>" + echapper(c.salle || "—") + "</dd>" +
     (ens ? "<dt>Enseignant(s)</dt><dd>" + echapper(ens) + "</dd>" : "") +
+    (c.memo ? "<dt>Mémo</dt><dd>📝 " + echapper(c.memo) + "</dd>" : "") +
     (c.groupes && c.groupes.length ? "<dt>Groupe(s)</dt><dd>" + echapper(c.groupes.join(", ")) + "</dd>" : "") +
     (c.formations && c.formations.length ? "<dt>Formation(s)</dt><dd>" + echapper(c.formations.map(f => f.replace(/^\./, "")).join(", ")) + "</dd>" : "") +
     (c.maj ? "<dt>Dernière mise à jour</dt><dd>" + echapper(c.maj) + "</dd>" : "") +

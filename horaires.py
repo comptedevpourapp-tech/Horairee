@@ -252,6 +252,10 @@ def analyser_cours(matiere: str = "", description: str = "") -> dict:
             brut = valeur.strip().rstrip("\\n").replace("<br/>", "").replace("<br>", "").strip()
             if brut:
                 infos["type_explicite"] = brut
+        elif cle in ("mémo", "memo", "mémo.", "note"):
+            brut = valeur.strip().rstrip("\\n").replace("<br/>", "").replace("<br>", "").strip()
+            if brut and "memo" not in infos:
+                infos["memo"] = brut
     recherche = (infos["intitule"] + " " + (matiere or "")).strip()
     explicite = infos.pop("type_explicite", "")
     if explicite:

@@ -63,6 +63,19 @@ d'études »), **Tutorat**, **Séminaire** (« workshop »), **Conférence**
 tronqués à 10 caractères (« Remédiatio », « Interrogatio », « Cours/Exercic »…)
 sont normalisés. Le type est recalculé à l'affichage : les entrées archivées
 avant l'extension des types sont réparées automatiquement, sans migration.
+Les types **Examen** (écrit ou oral) et **Exercices cotés** portent une
+étiquette rouge en bas de case (centrée) ; le type étant affiché au bas de la
+case, les metadonnées utiles restent lisibles au-dessus.
+
+## Mémo des cours
+
+Certaines descriptions UMONS contiennent une ligne « Mémo : … » (~3 800 cours
+par an : consignes de rentrée, « Test diagnostique MLFU », « SEMAINE
+FLEXIBLE - Activités à préciser »…). Le mémo est extrait automatiquement et
+affiché dans la case du cours (badge 📝 italique sur fond jaune pâle, une
+ligne avec ellipsis) ainsi que dans la fiche détail. Les mémos qui ne font
+que répéter le type ou l'intitulé déjà affichés sont masqués (comparaison
+sans accents ni pluriel).
 
 ## Année entière, automatiquement
 
