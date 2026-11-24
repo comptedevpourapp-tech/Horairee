@@ -412,6 +412,13 @@ def obtenir_annuel(ressource):
                     time.sleep(3)
         if evenements is None:
             print(f"Flux annuel indisponible pour {ressource} ({derniere_erreur}).", file=sys.stderr)
+            # anti-marteau : retenter au plus tôt dans 10 min (et pas à chaque
+            # requête utilisateur), sans écraser d'éventuelles données déjà
+            # mémoïsées pour cette ressource
+            ANNUEL_MEMOIRE[ressource] = {
+                "quand": maint - INTERVALLE_ANNUEL + 600,
+                "evenements": list(entree["evenements"]) if entree else [],
+            }
             if entree and maint - entree["quand"] < 7 * 86400:
                 return entree["evenements"]
             return []
@@ -476,6 +483,12 @@ def obtenir_annuel_groupe(ressource, groupe):
                     time.sleep(3)
         if evenements is None:
             print(f"Flux annuel de groupe indisponible pour {groupe} ({ressource}) ({derniere_erreur}).", file=sys.stderr)
+            # anti-marteau : retenter au plus tôt dans 10 min ; données déjà
+            # mémoïsées conservées
+            GROUPES_MEMOIRE[cle] = {
+                "quand": maint - INTERVALLE_ANNUEL + 600,
+                "evenements": list(entree["evenements"]) if entree else [],
+            }
             if entree and maint - entree["quand"] < 7 * 86400:
                 return entree["evenements"]
             return []
@@ -975,14 +988,17 @@ class Controleur(BaseHTTPRequestHandler):
                         with VERROU_ANNUEL:
                             a_annuel = ressource in ANNUEL_MEMOIRE
                             a_groupe = (ressource + "\x00" + valeur_groupe) in GROUPES_MEMOIRE if valeur_groupe else True
-                        # replis uniquement tant que les passes de fond ne sont
-                        # pas terminées (ou pour une ressource non couverte)
-                        if CATALOGUE_ANNUEL and not a_annuel and ressource in CATALOGUE_ANNUEL and not ANNUEL_PRET:
+                        # replis à la demande tant que la ressource n'est pas
+                        # mémoïsée — même APRÈS la fin des passes de fond (un
+                        # flux raté pendant une passe est rattrapé ici ; la
+                        # protection TTL + cache négatif anti-marteau évite de
+                        # marteler UMONS)
+                        if CATALOGUE_ANNUEL and not a_annuel and ressource in CATALOGUE_ANNUEL:
                             try:
                                 complements += obtenir_annuel(ressource)
                             except Exception:
                                 traceback.print_exc(file=sys.stderr)
-                        if valeur_groupe and CATALOGUE_GROUPES and not a_groupe and not ANNUEL_GROUPES_PRET:
+                        if valeur_groupe and CATALOGUE_GROUPES and not a_groupe:
                             try:
                                 complements += obtenir_annuel_groupe(ressource, valeur_groupe)
                             except Exception:
