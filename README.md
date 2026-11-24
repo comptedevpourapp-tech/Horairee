@@ -79,8 +79,31 @@ des cookies `hp_categorie`, `hp_ressource`, `hp_groupe`, validité 1 an) et
 directement sur l'horaire personnel (sélecteurs posés + semaine courante).
 Si la formation mémorisée a disparu du catalogue, l'écran de choix se
 rouvre. Tant que l'écran de choix est affiché, l'en-tête et la grille sont
-masqués — rien ne se charge superflu avant la décision. Pour retrouver
-l'écran de choix, effacez les cookies `hp_*` du site.
+masqués — rien ne se charge superflu avant la décision.
+
+## Changer la formation / le groupe mémorisés (bouton ⚙ Options)
+
+La barre de navigation de la semaine contient un bouton **⚙ Options** (à
+côté de « Année »). Il rouvre l'écran de choix **en mode modification** :
+
+- la formation et le groupe **actuels sont présélectionnés** (repris des
+  cookies) ; le titre devient « Changer votre formation / votre groupe » ;
+- **Enregistrer et afficher** : la nouvelle sélection devient le défaut
+  (cookies réécrits) et la grille se recharge dessus ;
+- **Tout afficher** : affiche la grille complète **sans mémoriser** — le
+  défaut enregistré reste inchangé ;
+- **Annuler** (ou touche **Échap**, ou clic sur le fond) referme l'écran
+  sans rien changer : la sélection enregistrée reste active et la grille
+  intacte est réaffichée. Le bouton Annuler (et le retour par Échap) ne
+  existent qu'en mode modification — à la première visite, le choix est
+  obligatoire.
+
+Si la vue année est ouverte, le bouton la referme proprement (sans
+recharger la grille) avant d'ouvrir l'écran ; en cas d'annulation on
+retombe sur la même semaine affichée.
+
+Pour retrouver l'écran de choix « première visite », effacez les cookies
+`hp_*` du site.
 
 ## Mémo des cours
 

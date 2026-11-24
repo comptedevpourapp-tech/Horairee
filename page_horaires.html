@@ -124,6 +124,7 @@
     <button id="suiv" title="Semaine suivante">▶</button>
     <button id="auj">Cette semaine</button>
     <button id="anneeBtn" title="Vue année : toutes les semaines de l'année (faites un dézoom de la page pour l'obtenir automatiquement, cliquez sur une semaine pour y naviguer)">Année</button>
+    <button id="changerPref" title="Changer la formation et le groupe mémorisés par défaut">⚙ Options</button>
   </div>
   <div class="controles">
     <label style="font-size:12px;">Groupe (TP) :</label>
@@ -535,12 +536,16 @@ function entrerVueAnnee(auto) {
   document.getElementById("message").style.display = "none";
   majVueAnnee();
 }
-function quitterVueAnnee() {
+function fermerVueAnnee() {
+  // ferme la vue année SANS recharger la grille (retour visuel)
   vueAnneeActive = false;
   vueAnneeAuto = false;
   document.getElementById("grille").style.display = "";
   document.getElementById("message").style.display = "";
   document.getElementById("vueAnnee").classList.remove("actif");
+}
+function quitterVueAnnee() {
+  fermerVueAnnee();
   charger();
 }
 async function majVueAnnee() {
@@ -591,6 +596,13 @@ document.getElementById("anneeBtn").onclick = () => {
   if (vueAnneeActive) quitterVueAnnee();
   else entrerVueAnnee(false);
 };
+// bouton « ⚙ Options » : rouvrir l'écran de choix pour changer la
+// formation/groupe mémorisés par défaut (présélection de l'actuel) ;
+// on referme d'abord la vue année sans recharger (sinon grille cachée au retour)
+document.getElementById("changerPref").onclick = () => {
+  if (vueAnneeActive) fermerVueAnnee();
+  ouvrirAccueil(lirePreference());
+};
 if (window.addEventListener) window.addEventListener("resize", () => {
   if (!vueAnneeActive && enVueDezoome()) entrerVueAnnee(true);
   else if (vueAnneeActive && vueAnneeAuto && !enVueDezoome()) quitterVueAnnee();
@@ -626,7 +638,15 @@ function fermerFiche() {
   document.getElementById("fiche").style.display = "none";
   document.getElementById("voile").style.display = "none";
 }
-document.addEventListener("keydown", e => { if (e.key === "Escape") fermerFiche(); });
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  const enChoix = (document.body || {}).classList && document.body.classList.contains("choix");
+  if (enChoix) {
+    if (lirePreference()) montrerHoraires();   // écran ouvert via ⚙ Options : Échap annule
+    return;                                    // première visite : choix obligatoire
+  }
+  fermerFiche();
+});
 document.getElementById("voile").onclick = () => {
   if ((document.body || {}).classList && document.body.classList.contains("choix")) return;  // écran de choix obligatoire
   document.getElementById("accueil").style.display = "none"; fermerFiche();
@@ -735,16 +755,20 @@ function montrerHoraires() {
   v.style.display = "none";
 }
 async function ouvrirAccueil(pref) {
-  // écran d'entrée : choix formation + groupe, mémorisé dans les cookies ;
-  // en mode « choix » (body.choix) l'en-tête et la grille sont masqués
+  // écran d'entrée / de modification : choix formation + groupe, mémorisé
+  // dans les cookies ; en mode « choix » (body.choix) l'en-tête et la grille
+  // sont masqués.
+  const modif = Boolean(pref && pref.ressource);
   classeChoix(true);
   const box = document.getElementById("accueil");
   box.innerHTML =
-    "<h2>Bienvenue sur votre emploi du temps UMONS</h2>" +
-    "<p style='font-size:13px;color:#555;margin:4px 0 2px'>Choisissez votre formation (et au besoin votre groupe de TP) ; l'information est mémorisée dans les cookies et votre horaire s'ouvrira automatiquement aux prochaines visites.</p>" +
+    "<h2>" + (modif ? "Changer votre formation / votre groupe" : "Bienvenue sur votre emploi du temps UMONS") + "</h2>" +
+    "<p style='font-size:13px;color:#555;margin:4px 0 2px'>" + (modif
+      ? "Choisissez une autre formation ou un autre groupe de TP ; « Enregistrer et afficher » en fait votre choix par défaut. « Annuler » garde la sélection actuelle."
+      : "Choisissez votre formation (et au besoin votre groupe de TP) ; l'information est mémorisée dans les cookies et votre horaire s'ouvrira automatiquement aux prochaines visites.") + "</p>" +
     "<label>Formation</label><select id='accFormation'></select>" +
     "<label>Groupe (TP)</label><select id='accGroupe'><option value=''>Tous les groupes</option></select>" +
-    "<div class='boutons'><button id='accTout' class='second'>Tout afficher</button><button id='accOk'>Enregistrer et afficher</button></div>";
+    "<div class='boutons'><button id='accAnnule' class='second'" + (modif ? "" : " style='display:none'") + ">Annuler</button><button id='accTout' class='second'>Tout afficher</button><button id='accOk'>Enregistrer et afficher</button></div>";
   const selF = box.querySelector("#accFormation");
   for (const f of (catalogue.formations || [])) {
     const o = document.createElement("option"); o.value = f.valeur; o.textContent = f.affichage; selF.appendChild(o);
@@ -781,6 +805,8 @@ async function ouvrirAccueil(pref) {
   };
   box.querySelector("#accOk").onclick = () => lancer(true);
   box.querySelector("#accTout").onclick = () => lancer(false);
+  const annule = box.querySelector("#accAnnule");
+  if (annule) annule.onclick = () => montrerHoraires();     // garder la sélection actuelle
 }
 
 (async () => {
